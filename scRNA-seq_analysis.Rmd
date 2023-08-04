@@ -1,0 +1,3256 @@
+---
+title: "scRNAseq for Ren"
+author: "Aaron Mohammed"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+library(Seurat)
+library(ggplot2)
+library(DoubletFinder)
+library(SingleR)
+library(SingleCellExperiment)
+library(Matrix)
+library(data.table)
+library(scater)
+library(clusterProfiler)
+library(openxlsx)
+library(org.Mm.eg.db)
+library(KEGG.db)
+library(enrichplot)
+library(EnhancedVolcano)
+library(qpdf)
+
+proj_path <- "/Users/asm/Creighton/core_lab/scRNAseq_Ren/MAIN"
+counts_path <- file.path(proj_path, "counts")
+
+seurat_path <- file.path(proj_path, "seurat_objects")
+sce_path <- file.path(proj_path, "sce_objects")
+pred_data_path <- file.path(proj_path, "predicted_annotations")
+markers_path <- file.path(proj_path, "markers")
+dge_path <- file.path(proj_path, "DGE_results")
+volcano_path <- file.path(dge_path, "volcano_plots")
+cell_path <- file.path(proj_path, "cells")
+umap_path <- file.path(proj_path, "UMAPs")
+
+# dir.create(seurat_path)
+# dir.create(sce_path)
+# dir.create(pred_data_path)
+# dir.create(markers_path)
+# dir.create(umap_path)
+# dir.create(dge_path)
+# dir.create(volcano_path)
+# dir.create(cell_path)
+
+```
+
+```{r}
+
+wild_mat <- Read10X(file.path(counts_path, "Wildtype", "filtered_feature_bc_matrix"),  
+                gene.column = 2,  
+                cell.column = 1,  
+                unique.features = TRUE,  
+                strip.suffix = FALSE)
+
+wild_s <- CreateSeuratObject(wild_mat, project = "wildtype")
+wild_s <- PercentageFeatureSet(wild_s, "^mt-", col.name = "pct_mito")
+wild_s <- PercentageFeatureSet(wild_s, "^Rp[sl]\\d+", col.name = "pct_ribo")
+
+knock_mat <- Read10X(file.path(counts_path, "Knockout", "filtered_feature_bc_matrix"),  
+                 gene.column = 2,  
+                 cell.column = 1,  
+                 unique.features = TRUE,  
+                 strip.suffix = FALSE)
+
+knock_s <- CreateSeuratObject(knock_mat, project = "knockout")
+knock_s <- PercentageFeatureSet(knock_s, "^mt-", col.name = "pct_mito")
+knock_s <- PercentageFeatureSet(knock_s, "^Rp[sl]\\d+", col.name = "pct_ribo")
+
+```
+
+```{r}
+
+wild_s <- subset(wild_s, subset = nCount_RNA >= 1000 & nFeature_RNA >= 1000 & nFeature_RNA <= 8000 & pct_mito <= 30)
+
+knock_s <- subset(knock_s, subset = nCount_RNA >= 1000 & nFeature_RNA >= 1000 & nFeature_RNA <= 8000 & pct_mito <= 30)
+
+```
+
+```{r}
+
+wild_s <- NormalizeData(wild_s)
+wild_s <- FindVariableFeatures(wild_s, selection.method = "vst", nfeatures = 2000)
+wild_s <- ScaleData(wild_s)
+wild_s <- RunPCA(wild_s)
+
+elbow <- ElbowPlot(wild_s, reduction = "pca", ndims = 50)
+elbow
+
+pct <- wild_s[["pca"]]@stdev / sum(wild_s[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+
+PC_80_pct <- which(cumu >= 80)[1]
+PC_80_pct #33
+
+wild_s <- FindNeighbors(wild_s, dims = 1:PC_80_pct)
+wild_s <- RunUMAP(wild_s, dims=1:PC_80_pct)
+wild_s <- FindClusters(wild_s, resolution = 0.5)
+
+wild_umap_1 <- UMAPPlot(wild_s, group.by = "seurat_clusters")
+
+param_sweep_results <- paramSweep_v3(wild_s, 1:PC_80_pct, sct = FALSE)
+param_sweep_summarized <- summarizeSweep(param_sweep_results, GT = FALSE)
+bcmnv <- find.pK(param_sweep_summarized)
+
+BCmetric_vs_pK <- ggplot(bcmnv, aes(pK, BCmetric, group = 1)) +
+  geom_point() +
+  geom_line()
+
+BCmetric_vs_pK
+
+pK <- as.numeric(as.character(bcmnv$pK[which(bcmnv$BCmetric == max(bcmnv$BCmetric))]))
+
+seurat_clusters <- wild_s@meta.data$seurat_clusters
+homotypic_prop <- modelHomotypic(seurat_clusters)
+nExp_poi <- round(0.048*nrow(wild_s@meta.data)) # 6250 cells
+nExp_poi_adj <- round(nExp_poi*(1-homotypic_prop))
+
+wild_s <- doubletFinder_v3(wild_s,
+                           PCs = 1:PC_80_pct,
+                           pN = 0.25,
+                           pK = pK,
+                           nExp = nExp_poi_adj,
+                           reuse.pANN = FALSE,
+                           sct = FALSE)
+
+dFname <- paste0("DF.classifications_0.25_", sep="", pK, sep="_", nExp_poi_adj)
+
+Idents(wild_s) <- dFname
+wild_s <- subset(wild_s, idents = "Singlet")
+
+wild_umap_2 <- UMAPPlot(wild_s, group.by = "seurat_clusters")
+
+saveRDS(wild_s, file.path(seurat_path, "wildtype_seurat_filtered.rds"))
+
+wild_assay_data <- GetAssayData(wild_s, slot = "counts")
+saveRDS(wild_assay_data, file.path(sce_path, "wild_assay_data.rds"))
+
+
+wild_umap_1
+wild_umap_2
+
+```
+
+```{r}
+
+knock_s <- NormalizeData(knock_s)
+knock_s <- FindVariableFeatures(knock_s, selection.method = "vst", nfeatures = 2000)
+knock_s <- ScaleData(knock_s)
+knock_s <- RunPCA(knock_s)
+
+elbow <- ElbowPlot(knock_s, reduction = "pca", ndims = 50)
+elbow
+
+pct <- knock_s[["pca"]]@stdev / sum(knock_s[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+
+PC_80_pct <- which(cumu >= 80)[1]
+PC_80_pct #31
+
+knock_s <- FindNeighbors(knock_s, dims = 1:PC_80_pct)
+knock_s <- RunUMAP(knock_s, dims=1:PC_80_pct)
+knock_s <- FindClusters(knock_s, resolution = 0.5)
+
+knock_umap_1 <- UMAPPlot(knock_s, group.by = "seurat_clusters")
+
+param_sweep_results <- paramSweep_v3(knock_s, 1:PC_80_pct, sct = FALSE)
+param_sweep_summarized <- summarizeSweep(param_sweep_results, GT = FALSE)
+bcmnv <- find.pK(param_sweep_summarized)
+
+BCmetric_vs_pK <- ggplot(bcmnv, aes(pK, BCmetric, group = 1)) +
+  geom_point() +
+  geom_line()
+
+BCmetric_vs_pK
+
+pK <- as.numeric(as.character(bcmnv$pK[which(bcmnv$BCmetric == max(bcmnv$BCmetric))]))
+
+seurat_clusters <- knock_s@meta.data$seurat_clusters
+homotypic_prop <- modelHomotypic(seurat_clusters)
+nExp_poi <- round(0.047*nrow(knock_s@meta.data)) # 6108 cells
+nExp_poi_adj <- round(nExp_poi*(1-homotypic_prop))
+
+knock_s <- doubletFinder_v3(knock_s,
+                           PCs = 1:PC_80_pct,
+                           pN = 0.25,
+                           pK = pK,
+                           nExp = nExp_poi_adj,
+                           reuse.pANN = FALSE,
+                           sct = FALSE)
+
+dFname <- paste0("DF.classifications_0.25_", sep="", pK, sep="_", nExp_poi_adj)
+
+Idents(knock_s) <- dFname
+knock_s <- subset(knock_s, idents = "Singlet")
+
+knock_umap_2 <- UMAPPlot(knock_s, group.by = "seurat_clusters")
+
+saveRDS(knock_s, file.path(seurat_path, "knockout_seurat_filtered.rds"))
+
+knock_assay_data <- GetAssayData(knock_s, slot = "counts")
+saveRDS(knock_assay_data, file.path(sce_path, "knock_assay_data.rds"))
+
+knock_umap_1
+knock_umap_2
+
+```
+
+```{r}
+
+Cao.Spielmann_counts <- readMM(file.path(proj_path,"GSE119945_Cao-Spielmann", "GSE119945_gene_count.txt"))
+
+Cao.Spielmann_meta <- read.csv(file.path(proj_path,"GSE119945_Cao-Spielmann", "cell_annotate.csv"), row.names = 1)
+
+Cao.Spielmann_gene_annot <- read.csv(file.path(proj_path,"GSE119945_Cao-Spielmann", "gene_annotate.csv"), row.names = 1)
+
+colnames(Cao.Spielmann_counts) <- row.names(Cao.Spielmann_meta)
+rownames(Cao.Spielmann_counts) <- Cao.Spielmann_gene_annot$gene_short_name
+
+Cao.Spielmann_seurat <- CreateSeuratObject(counts = Cao.Spielmann_counts, project = "Cao.Spielmann")
+rm(Cao.Spielmann_counts)
+gc()
+
+Cao.Spielmann_seurat <- AddMetaData(Cao.Spielmann_seurat, Cao.Spielmann_meta$Main_cell_type, col.name = "celltype")
+Cao.Spielmann_seurat <- AddMetaData(Cao.Spielmann_seurat, Cao.Spielmann_meta$development_stage, col.name = "development_stage")
+rm(Cao.Spielmann_meta)
+gc()
+
+
+indexes <- which(!is.na(Cao.Spielmann_seurat$celltype))
+cells <- row.names(Cao.Spielmann_seurat@meta.data)[indexes]
+
+Cao.Spielmann_seurat <- AddMetaData(Cao.Spielmann_seurat, row.names(Cao.Spielmann_seurat@meta.data), col.name = "cell_id")
+
+Idents(Cao.Spielmann_seurat) <- "development_stage"
+Cao.Spielmann_seurat <- subset(Cao.Spielmann_seurat, idents = "11.5")
+
+# saveRDS(Cao.Spielmann_seurat, file.path(seurat_path, "Cao.Spielmann_seurat.rds"))
+
+Cao.Spielmann_sce <- as.SingleCellExperiment(Cao.Spielmann_seurat)
+Cao.Spielmann_sce <- logNormCounts(Cao.Spielmann_sce)
+
+# saveRDS(Cao.Spielmann_sce, file.path(sce_path, "Cao.Spielmann_sce.rds")) 
+
+```
+
+
+
+
+```{r}
+
+Feng_seurat <- readRDS(file.path(proj_path,"GSE193346_Feng", "GSE193346_C57BL6_seurat_object.rds"))
+Feng_seurat@meta.data$cell_type_broad <- as.character(Feng_seurat@meta.data$cell_type_broad)
+Feng_seurat@meta.data$cell_type_spec <- as.character(Feng_seurat@meta.data$cell_type_spec)
+Feng_seurat@meta.data$stage <- as.character(Feng_seurat@meta.data$stage)
+Feng_seurat@meta.data$zone <- as.character(Feng_seurat@meta.data$zone)
+
+Idents(Feng_seurat) <- "stage"
+Feng_seurat <- subset(Feng_seurat, idents = c("E10.5", "E11.5", "E12.5"))
+Feng_seurat[["orig.ident"]] <- "Feng"
+
+Feng_embryonic_sce <- as.SingleCellExperiment(Feng_seurat)
+Feng_embryonic_sce <- logNormCounts(Feng_embryonic_sce)
+
+# saveRDS(Feng_seurat, file.path(seurat_path, "Feng_seurat_embryonic.rds"))
+# saveRDS(Feng_embryonic_sce, file.path(sce_path, "Feng_embryonic_sce.rds")) 
+
+```
+
+```{r}
+
+mat <- fread("https://cells.ucsc.edu/mouse-cardiac/wtAll/exprMatrix.tsv.gz")
+meta <- data.frame(fread("https://cells.ucsc.edu/mouse-cardiac/wtAll/meta.tsv"), row.names=1)
+genes = mat[,1][[1]]
+genes = gsub(".+[|]", "", genes)
+mat = data.frame(mat[,-1], row.names=genes)
+deSoysa_seurat <- CreateSeuratObject(counts = mat, project = "deSoysa", meta.data=meta)
+deSoysa_seurat <- AddMetaData(deSoysa_seurat, meta$Cluster, col.name = "celltype")
+deSoysa_seurat$nGene <- meta$nGene
+deSoysa_seurat$nUMI <- meta$nUMI
+deSoysa_seurat$gem.group <- meta$gem.group
+deSoysa_seurat$Time.Point <- meta$Time.Point
+deSoysa_seurat$Phase <- meta$Phase
+
+
+saveRDS(deSoysa_seurat, file.path(seurat_path, "deSoysa_seurat.rds"))
+
+Idents(deSoysa_seurat) <- "Time.Point"
+deSoysa_seurat <- subset(deSoysa_seurat, idents="E9.25")
+saveRDS(deSoysa_seurat, file.path(seurat_path, "deSoysa_E9.25_seurat.rds"))
+
+deSoysa_sce <- as.SingleCellExperiment(deSoysa_seurat)
+deSoysa_sce <- logNormCounts(deSoysa_sce)
+
+saveRDS(deSoysa_sce, file.path(sce_path, "deSoysa_E9.25_sce.rds"))
+
+```
+
+```{r}
+
+Linscheid_norm_data <- read.csv(file.path(proj_path, "GSE130710_Linscheid", "GSE130710_normdata.csv"), row.names = 1)
+Linscheid_meta_data <- read.csv(file.path(proj_path, "GSE130710_Linscheid", "GSE130710_metadata.csv"), row.names = 1)
+
+Linscheid_seurat <- CreateSeuratObject(counts = Linscheid_norm_data, project = "Linscheid", meta.data=Linscheid_meta_data)
+
+# saveRDS(Linscheid_seurat, file.path(seurat_path, "Linscheid_seurat.rds")) 
+# Linscheid_sce <- as.SingleCellExperiment(Linscheid_seurat)
+
+# saveRDS(Linscheid_sce, file.path(sce_path, "Linscheid_sce.rds"))
+
+```
+
+
+
+
+
+```{r}
+
+Han_sce <- readRDS(file.path(sce_path, "han_sce.rds")) 
+Cao.Spielmann_sce <- readRDS(file.path(sce_path, "Cao.Spielmann_sce.rds")) 
+Feng_embryonic_sce <- readRDS(file.path(sce_path, "Feng_embryonic_sce.rds")) 
+deSoysa_sce <- readRDS(file.path(sce_path, "deSoysa_E9.25_sce.rds"))
+Linscheid_sce <- readRDS(file.path(sce_path, "Linscheid_sce.rds"))
+
+wild_assay_data <- readRDS(file.path(sce_path, "wild_assay_data.rds"))
+
+wild_pred_data <- SingleR(test = wild_assay_data, 
+                          ref = list(Han = Han_sce,
+                                     Cao.Spielmann = Cao.Spielmann_sce,
+                                     Feng = Feng_embryonic_sce,
+                                     deSoysa = deSoysa_sce,
+                                     Linscheid = Linscheid_sce),
+                          labels = list(Han_sce$celltype,
+                                        Cao.Spielmann_sce$celltype,
+                                        Feng_embryonic_sce$cell_type_broad,
+                                        deSoysa_sce$celltype,
+                                        Linscheid_sce$clustAnnot),
+                          assay.type.test = "counts",
+                          assay.type.ref = "logcounts")
+
+saveRDS(wild_pred_data, file.path(pred_data_path, "wild_pred_data_ALL_5.rds")) 
+
+
+
+knock_assay_data <- readRDS(file.path(sce_path, "knock_assay_data.rds"))
+
+knock_pred_data <- SingleR(test = knock_assay_data, 
+                          ref = list(Han = Han_sce,
+                                     Cao.Spielmann = Cao.Spielmann_sce,
+                                     Feng = Feng_embryonic_sce,
+                                     deSoysa = deSoysa_sce,
+                                     Linscheid = Linscheid_sce),
+                          labels = list(Han_sce$celltype,
+                                        Cao.Spielmann_sce$celltype,
+                                        Feng_embryonic_sce$cell_type_broad,
+                                        deSoysa_sce$celltype,
+                                        Linscheid_sce$clustAnnot),
+                          assay.type.test = "counts",
+                          assay.type.ref = "logcounts")
+
+saveRDS(knock_pred_data, file.path(pred_data_path, "knock_pred_data_ALL_5.rds"))
+
+```
+
+```{r}
+
+wild_s <- readRDS(file.path(seurat_path, "wildtype_seurat_filtered.rds"))
+
+wild_s <- AddMetaData(wild_s, wild_pred_data@listData$orig.results$Han$labels, col.name = "Han_stringR_celltype")
+wild_s <- AddMetaData(wild_s, wild_pred_data@listData$orig.results$Cao.Spielmann$labels, col.name = "Cao.Spielmann_stringR_celltype")
+wild_s <- AddMetaData(wild_s, wild_pred_data@listData$orig.results$Feng$labels, col.name = "Feng_stringR_celltype")
+wild_s <- AddMetaData(wild_s, wild_pred_data@listData$orig.results$deSoysa$labels, col.name = "deSoysa_stringR_celltype")
+wild_s <- AddMetaData(wild_s, wild_pred_data@listData$orig.results$Linscheid$labels, col.name = "Linscheid_stringR_celltype")
+wild_s <- AddMetaData(wild_s, wild_pred_data$labels, col.name = "All_5_stringR_celltype")
+
+saveRDS(wild_s, file.path(seurat_path, "wildtype_annotated_all_5_refs.rds"))
+
+
+knock_s <- readRDS(file.path(seurat_path, "knockout_seurat_filtered.rds"))
+
+knock_s <- AddMetaData(knock_s, knock_pred_data@listData$orig.results$Han$labels, col.name = "Han_stringR_celltype")
+knock_s <- AddMetaData(knock_s, knock_pred_data@listData$orig.results$Cao.Spielmann$labels, col.name = "Cao.Spielmann_stringR_celltype")
+knock_s <- AddMetaData(knock_s, knock_pred_data@listData$orig.results$Feng$labels, col.name = "Feng_stringR_celltype")
+knock_s <- AddMetaData(knock_s, knock_pred_data@listData$orig.results$deSoysa$labels, col.name = "deSoysa_stringR_celltype")
+knock_s <- AddMetaData(knock_s, knock_pred_data@listData$orig.results$Linscheid$labels, col.name = "Linscheid_stringR_celltype")
+knock_s <- AddMetaData(knock_s, knock_pred_data$labels, col.name = "All_5_stringR_celltype")
+
+saveRDS(knock_s, file.path(seurat_path, "knockout_annotated_all_5_refs.rds"))
+
+```
+
+```{r}
+
+merged_seurat <- merge(x = wild_s, y = knock_s,
+                add.cell.ids = c("wildtype","knockout"),
+                project = "BubR1_knockout")
+
+readRDS(merged_seurat, file.path(seurat_path, "merged_seurat.rds"))
+
+```
+
+```{r}
+
+merged_seurat <- readRDS(file.path(seurat_path, "merged_seurat.rds"))
+
+DefaultAssay(merged_seurat) <- "RNA"
+
+mouse_seurat.list <- SplitObject(merged_seurat, split.by = "orig.ident")
+
+mouse_seurat.list <- lapply(X = mouse_seurat.list, FUN = function(x) {
+  x <- NormalizeData(x, 
+                     verbose = FALSE)
+  x <- FindVariableFeatures(x, 
+                            selection.method = "vst", 
+                            nfeatures = 2000,
+                            verbose = FALSE)
+})
+
+features <- SelectIntegrationFeatures(object.list = mouse_seurat.list,
+                                      verbose = FALSE)
+
+anchors <- FindIntegrationAnchors(object.list = mouse_seurat.list, 
+                                  anchor.features = features,
+                                  verbose = FALSE)
+
+merged_seurat <- IntegrateData(anchorset = anchors,
+                               verbose = FALSE)
+
+DefaultAssay(merged_seurat) <- "integrated"
+
+merged_seurat <- ScaleData(merged_seurat, 
+                           verbose = FALSE)
+
+merged_seurat <- RunPCA(merged_seurat, npcs = 50)
+
+elbow <- ElbowPlot(merged_seurat, reduction = "pca", ndims = 50)
+elbow
+
+pdf(file.path(umap_path, "elbow_plot.pdf"), width = 10, height = 6)
+elbow
+dev.off()
+
+pct <- merged_seurat[["pca"]]@stdev / sum(merged_seurat[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+
+co1 <- which(cumu >= 80 & pct <= 5)[1]
+co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), 
+            decreasing = T)[1] + 1
+
+co1 #32 (80.73%)
+co2 #17 (59.76%)
+
+min.pc <- min(co1, co2)
+
+PC_60_pct <- which(cumu >= 60)[1]
+PC_60_pct #18
+
+PC_65_pct <- which(cumu >= 65)[1]
+PC_65_pct #21
+
+PC_70_pct <- which(cumu >= 70)[1]
+PC_70_pct #24
+
+PC_75_pct <- which(cumu >= 75)[1]
+PC_75_pct #28
+
+PC_80_pct <- which(cumu >= 80)[1]
+PC_80_pct #32
+
+PC_85_pct <- which(cumu >= 85)[1]
+PC_85_pct #36
+
+PC_90_pct <- which(cumu >= 90)[1]
+PC_90_pct #41
+
+PC_95_pct <- which(cumu >= 95)[1]
+PC_95_pct #45
+
+# saveRDS(merged_seurat, file.path(seurat_path, "merged_seurat_integrated.rds"))
+
+```
+
+```{r}
+
+merged_seurat <- readRDS(file.path(seurat_path, "merged_seurat_integrated.rds"))
+
+DefaultAssay(merged_seurat) <- "integrated"
+
+PCs <- c(min.pc, PC_60_pct, PC_65_pct, PC_70_pct, PC_75_pct, 
+         PC_80_pct, PC_85_pct, PC_90_pct, PC_95_pct)
+
+res_vec <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
+
+for (i in 1:length(PCs)) {
+  
+  merged_seurat <- FindNeighbors(merged_seurat, 
+                               dims = 1:PCs[i],
+                               verbose = FALSE)
+
+  merged_seurat <- RunUMAP(merged_seurat, 
+                           dims=1:PCs[i],
+                           verbose = FALSE)
+  
+  merged_seurat <- FindClusters(merged_seurat, 
+                                resolution = res_vec,
+                                verbose = FALSE)
+  
+  dim_path <- file.path(umap_path, paste0(PCs[i], sep="_", "dims"))
+  dir.create(dim_path)
+  
+  dim_title <- paste0(PCs[i], sep =" ", "Dimensions")
+  
+
+  pdf(file.path(dim_path, "All_5_refs_umap.pdf"), height = 10, width = 16)
+  print(UMAPPlot(merged_seurat, group.by = "All_5_stringR_celltype") +
+          guides(color = guide_legend(override.aes = list(size=4), ncol=1) ) +
+          ggtitle(paste0("All 5 References", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Han_umap.pdf"), height = 7, width = 13)
+  print(UMAPPlot(merged_seurat, group.by = "Han_stringR_celltype") +
+          guides(color = guide_legend(override.aes = list(size=4), ncol=1) ) +
+          ggtitle(paste0("Han", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Cao-Spielmann_umap.pdf"), height = 7, width = 13)
+  print(UMAPPlot(merged_seurat, group.by = "Cao.Spielmann_stringR_celltype") +
+          guides(color = guide_legend(override.aes = list(size=4), ncol=1) ) +
+          ggtitle(paste0("Cao-Spielmann", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Feng_umap.pdf"), height = 7, width = 12)
+  print(UMAPPlot(merged_seurat, group.by = "Feng_stringR_celltype") +
+          ggtitle(paste0("Feng", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "deSoysa_umap.pdf"), height = 7, width = 12)
+  print(UMAPPlot(merged_seurat, group.by = "deSoysa_stringR_celltype") +
+          ggtitle(paste0("de Soysa", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Linscheid_umap.pdf"), height = 7, width = 12)
+  print(UMAPPlot(merged_seurat, group.by = "Linscheid_stringR_celltype") + 
+          ggtitle(paste0("Linscheid", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf_combine(input = c(file.path(dim_path, "All_5_refs_umap.pdf"),
+                        file.path(dim_path, "Han_umap.pdf"),
+                        file.path(dim_path, "Cao-Spielmann_umap.pdf"), 
+                        file.path(dim_path, "Feng_umap.pdf"), 
+                        file.path(dim_path, "deSoysa_umap.pdf"),
+                        file.path(dim_path, "Linscheid_umap.pdf")),
+              output = file.path(dim_path, "Celltype_umaps.pdf"))
+  
+  pdf(file.path(dim_path, "Cluster_umaps.pdf"), height = 6, width = 10)
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.1") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[1], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.2") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[2], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.3") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[3], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.4") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[4], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.5") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[5], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.6") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[6], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.7") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[7], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.8") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[8], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.9") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[9], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.1") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[10], sep =" ", "Resolution")))
+  dev.off()
+  
+}
+
+
+```
+
+```{r}
+
+merged_seurat <- readRDS(file.path(seurat_path, "merged_seurat_integrated.rds"))
+
+DefaultAssay(merged_seurat) <- "integrated"
+
+PCs <- c(19,20,33,34,35,37,38,39,40)
+
+res_vec <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
+
+for (i in 1:length(PCs)) {
+  
+  merged_seurat <- FindNeighbors(merged_seurat, 
+                               dims = 1:PCs[i],
+                               verbose = FALSE)
+
+  merged_seurat <- RunUMAP(merged_seurat, 
+                           dims=1:PCs[i],
+                           verbose = FALSE)
+  
+  merged_seurat <- FindClusters(merged_seurat, 
+                                resolution = res_vec,
+                                verbose = FALSE)
+  
+  dim_path <- file.path(umap_path, paste0(PCs[i], sep="_", "dims"))
+  dir.create(dim_path)
+  
+  dim_title <- paste0(PCs[i], sep =" ", "Dimensions")
+  
+
+  pdf(file.path(dim_path, "All_5_refs_umap.pdf"), height = 10, width = 16)
+  print(UMAPPlot(merged_seurat, group.by = "All_5_stringR_celltype") +
+          guides(color = guide_legend(override.aes = list(size=4), ncol=1) ) +
+          ggtitle(paste0("All 5 References", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Han_umap.pdf"), height = 7, width = 13)
+  print(UMAPPlot(merged_seurat, group.by = "Han_stringR_celltype") +
+          guides(color = guide_legend(override.aes = list(size=4), ncol=1) ) +
+          ggtitle(paste0("Han", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Cao-Spielmann_umap.pdf"), height = 7, width = 13)
+  print(UMAPPlot(merged_seurat, group.by = "Cao.Spielmann_stringR_celltype") +
+          guides(color = guide_legend(override.aes = list(size=4), ncol=1) ) +
+          ggtitle(paste0("Cao-Spielmann", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Feng_umap.pdf"), height = 7, width = 12)
+  print(UMAPPlot(merged_seurat, group.by = "Feng_stringR_celltype") +
+          ggtitle(paste0("Feng", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "deSoysa_umap.pdf"), height = 7, width = 12)
+  print(UMAPPlot(merged_seurat, group.by = "deSoysa_stringR_celltype") +
+          ggtitle(paste0("de Soysa", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf(file.path(dim_path, "Linscheid_umap.pdf"), height = 7, width = 12)
+  print(UMAPPlot(merged_seurat, group.by = "Linscheid_stringR_celltype") + 
+          ggtitle(paste0("Linscheid", sep=" - ", dim_title)))
+  dev.off()
+  
+  pdf_combine(input = c(file.path(dim_path, "All_5_refs_umap.pdf"),
+                        file.path(dim_path, "Han_umap.pdf"),
+                        file.path(dim_path, "Cao-Spielmann_umap.pdf"), 
+                        file.path(dim_path, "Feng_umap.pdf"), 
+                        file.path(dim_path, "deSoysa_umap.pdf"),
+                        file.path(dim_path, "Linscheid_umap.pdf")),
+              output = file.path(dim_path, "Celltype_umaps.pdf"))
+  
+  pdf(file.path(dim_path, "Cluster_umaps.pdf"), height = 6, width = 10)
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.1") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[1], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.2") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[2], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.3") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[3], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.4") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[4], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.5") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[5], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.6") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[6], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.7") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[7], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.8") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[8], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.0.9") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[9], sep =" ", "Resolution")))
+  print(UMAPPlot(merged_seurat, group.by = "integrated_snn_res.1") +
+          ggtitle(paste0("Clusters", sep = " - ", dim_title, sep = " ", 
+                         "-", sep=" ", res_vec[10], sep =" ", "Resolution")))
+  dev.off()
+  
+}
+
+
+```
+
+```{r}
+
+merged_seurat <- readRDS(file.path(seurat_path, "merged_seurat_integrated.rds"))
+
+DefaultAssay(merged_seurat) <- "integrated"
+
+merged_seurat <- FindNeighbors(merged_seurat, 
+                             dims = 1:38,
+                             verbose = FALSE)
+
+merged_seurat <- RunUMAP(merged_seurat, 
+                         dims=1:38,
+                         verbose = FALSE)
+
+merged_seurat <- FindClusters(merged_seurat, 
+                              resolution = c(0.1, 0.2, 0.3, 0.4, 0.5, 
+                                             0.6, 0.7, 0.8, 0.9, 1),
+                              verbose = FALSE)
+
+merged_seurat <- FindClusters(merged_seurat, 
+                              resolution = c(0.1, 0.2, 0.3, 0.4, 0.5, 
+                                             0.6, 0.7, 0.8, 0.9, 1),
+                              verbose = FALSE)
+
+
+All_5_umap <- UMAPPlot(merged_seurat, group.by = "All_5_stringR_celltype")
+
+
+```
+
+```{r}
+
+HoverLocator(All_5_umap, information = FetchData(merged_seurat, vars = c("All_5_stringR_celltype",
+                                                                    "Han_stringR_celltype",
+                                                                    "Cao.Spielmann_stringR_celltype",
+                                                                    "Feng_stringR_celltype",
+                                                                    "deSoysa_stringR_celltype",
+                                                                    "Linscheid_stringR_celltype")))
+
+merged_seurat <- AddMetaData(merged_seurat, 
+                             rep(NA, nrow(merged_seurat@meta.data)),
+                             col.name = "marked_clusters")
+
+cluster_A <- CellSelector(All_5_umap) #Myocardial
+merged_seurat@meta.data[cluster_A, "marked_clusters"] <- "cluster_A"
+
+cluster_B <- CellSelector(All_5_umap) #Endocardial
+merged_seurat@meta.data[cluster_B, "marked_clusters"] <- "cluster_B"
+
+cluster_C <- CellSelector(All_5_umap) #Epicardial
+merged_seurat@meta.data[cluster_C, "marked_clusters"] <- "cluster_C"
+
+cluster_D <- CellSelector(All_5_umap) #Blood 1
+merged_seurat@meta.data[cluster_D, "marked_clusters"] <- "cluster_D"
+
+cluster_E <- CellSelector(All_5_umap) #Blood 2
+merged_seurat@meta.data[cluster_E, "marked_clusters"] <- "cluster_E"
+
+cluster_F <- CellSelector(All_5_umap) #Blood 3
+merged_seurat@meta.data[cluster_F, "marked_clusters"] <- "cluster_F"
+
+cluster_G <- CellSelector(All_5_umap) #Immune 
+merged_seurat@meta.data[cluster_G, "marked_clusters"] <- "cluster_G"
+
+cluster_H <- CellSelector(All_5_umap) #Fibroblast/stromal 1 
+merged_seurat@meta.data[cluster_H, "marked_clusters"] <- "cluster_H"
+
+cluster_I <- CellSelector(All_5_umap) #Fibroblast/stromal 2
+merged_seurat@meta.data[cluster_I, "marked_clusters"] <- "cluster_I"
+
+cluster_J <- CellSelector(All_5_umap) #Endocardial 2
+merged_seurat@meta.data[cluster_J, "marked_clusters"] <- "cluster_J"
+
+cluster_K <- CellSelector(All_5_umap) #Epicardial 2
+merged_seurat@meta.data[cluster_K, "marked_clusters"] <- "cluster_K"
+
+cluster_L <- CellSelector(All_5_umap) #Outlier 1
+merged_seurat@meta.data[cluster_L, "marked_clusters"] <- "cluster_L"
+
+cluster_M <- CellSelector(All_5_umap) #Outlier 2
+merged_seurat@meta.data[cluster_M, "marked_clusters"] <- "cluster_M"
+
+cluster_N <- CellSelector(All_5_umap) #Outlier 3
+merged_seurat@meta.data[cluster_N, "marked_clusters"] <- "cluster_N"
+
+cluster_O <- CellSelector(All_5_umap) #Outlier 4
+merged_seurat@meta.data[cluster_O, "marked_clusters"] <- "cluster_O"
+
+cluster_P <- CellSelector(All_5_umap) #Outlier 5
+merged_seurat@meta.data[cluster_P, "marked_clusters"] <- "cluster_P"
+
+
+
+marked_clusters_umap <- UMAPPlot(merged_seurat, group.by = "marked_clusters")
+marked_clusters_lab_umap <- UMAPPlot(merged_seurat, group.by = "marked_clusters", label=TRUE)
+
+pdf(file.path(umap_path, "marked_clusters.pdf"), height = 7, width = 12)
+marked_clusters_umap
+marked_clusters_lab_umap
+dev.off()
+
+# saveRDS(merged_seurat, file.path(seurat_path, "merged_seurat_clusters_marked.rds"))
+
+```
+
+```{r}
+
+DefaultAssay(merged_seurat) <- "RNA"
+Idents(merged_seurat) <- "marked_clusters"
+
+conserved_markers <- {}
+clusters <- unique(merged_seurat$marked_clusters)
+
+for (i in 1:length(clusters)) {
+  conserved_markers[[i]] <- FindConservedMarkers(merged_seurat, 
+                                  ident.1 = clusters[i],
+                                  grouping.var = "orig.ident")
+}
+
+names(conserved_markers) <- clusters
+
+write.xlsx(conserved_markers, file.path(markers_path, "marked_clusters.xlsx"), rowNames = TRUE)
+
+
+```
+
+```{r}
+
+merged_seurat <- AddMetaData(merged_seurat, 
+                             merged_seurat$marked_clusters,
+                             col.name = "CELLTYPE_BROAD")
+
+"Myocardial" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_A")]
+"Endocardial" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_B")]
+"Epicardial" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_C")]
+"Blood" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_D")]
+"Immune" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_E")]
+"Immune" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_F")]
+"Immune" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_G")]
+"Mesenchymal" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_H")]
+"Unknown 1" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_I")]
+"Unknown 2" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_J")]
+"Unknown 2" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_K")]
+"Unknown 2" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_N")]
+"Unknown" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_L")]
+"Unknown" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_M")]
+"Unknown" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_O")]
+"Unknown" -> merged_seurat$CELLTYPE_BROAD[which(merged_seurat$CELLTYPE_BROAD == "cluster_P")]
+
+celltype_umap <- UMAPPlot(merged_seurat, group.by = "CELLTYPE_BROAD", label = FALSE)
+celltype_umap
+
+# saveRDS(merged_seurat, file.path(seurat_path, "seurat_w_CELLTYPE_BROAD.rds"))
+
+```
+
+```{r}
+
+merged_seurat <- readRDS(file.path(seurat_path, "seurat_w_CELLTYPE_BROAD.rds"))
+
+DefaultAssay(merged_seurat) <- "RNA"
+
+s.genes <- c("Mcm5","Pcna","Tyms","Fen1","Mcm2","Mcm4","Rrm1","Ung","Gins2","Mcm6","Cdca7","Dtl","Prim1","Uhrf1","Hells","Rfc2","Rpa2","Nasp","Rad51ap1","Gmnn","Wdr76","Slbp","Ccne2","Ubr7","Pold3","Msh2","Atad2","Rad51","Rrm2","Cdc45","Cdc6","Exo1","Tipin","Dscc1","Blm","Casp8ap2","Usp1","Clspn","Pola1","Chaf1b","Brip1","E2f8")
+
+g2m.genes <- c("Hmgb2","Cdk1","Nusap1","Ube2c","Birc5","Tpx2","Top2a","Ndc80","Cks2","Nuf2","Cks1b","Mki67","Tmpo","Cenpf","Tacc3","Fam64a","Smc4","Ccnb2","Ckap2l","Ckap2","Aurkb","Bub1","Kif11","Anp32e","Tubb4b","Gtse1","Kif20b","Hjurp","Cdca3","Hn1","Cdc20","Ttk","Cdc25c","Kif2c","Rangap1","Ncapd2","Dlgap5","Cdca2","Cdca8","Ect2","Kif23","Hmmr","Aurka","Psrc1","Anln","Lbr","Ckap5","Cenpe","Ctcf","Nek2","G2e3","Gas2l3","Cbx5","Cenpa")
+
+merged_seurat <- CellCycleScoring(merged_seurat, s.features = s.genes, g2m.features = g2m.genes)
+
+# saveRDS(merged_seurat, file.path(seurat_path, "seurat_w_phases.rds"))
+
+```
+
+```{r}
+
+merged_seurat <- readRDS(file.path(seurat_path, "seurat_w_CELLTYPE_BROAD.rds"))
+
+Idents(merged_seurat) <- "CELLTYPE_BROAD"
+myocardium_sub <- subset(merged_seurat, idents="Myocardial")
+
+saveRDS(myocardium_sub, file.path(seurat_path, "myocardium_subset.rds"))
+
+```
+
+```{r}
+
+mat <- fread("https://cells.ucsc.edu/mouse-cardiac/Myocardium_Subcluster_wPseudotime/exprMatrix.tsv.gz")
+meta <- data.frame(fread("https://cells.ucsc.edu/mouse-cardiac/Myocardium_Subcluster_wPseudotime/meta.tsv"), row.names=1)
+genes = mat[,1][[1]]
+genes = gsub(".+[|]", "", genes)
+mat = data.frame(mat[,-1], row.names=genes)
+deSoysa_myocardium <- CreateSeuratObject(counts = mat, project = "deSoysa_myocardium", meta.data=meta)
+deSoysa_myocardium <- AddMetaData(deSoysa_myocardium, meta$Cluster, col.name = "celltype")
+deSoysa_myocardium$nGene <- meta$nGene
+deSoysa_myocardium$nUMI <- meta$nUMI
+deSoysa_myocardium$gem.group <- meta$gem.group
+deSoysa_myocardium$timepoint <- meta$timepoint
+deSoysa_myocardium$Phase <- meta$Phase
+deSoysa_myocardium$Cluster <- meta$Cluster
+deSoysa_myocardium$Pseudotime <- meta$Pseudotime
+deSoysa_myocardium$Pseudotime.State <- meta$Pseudotime.State
+
+saveRDS(deSoysa_myocardium, file.path(seurat_path, "deSoysa_myocardium_seurat.rds"))
+
+Idents(deSoysa_myocardium) <- "timepoint"
+deSoysa_myocardium <- subset(deSoysa_myocardium, idents="E925")
+saveRDS(deSoysa_myocardium, file.path(seurat_path, "deSoysa_myocardium_E9.25_seurat.rds"))
+
+deSoysa_myocardium_sce <- as.SingleCellExperiment(deSoysa_myocardium)
+deSoysa_myocardium_sce <- logNormCounts(deSoysa_myocardium_sce)
+
+# saveRDS(deSoysa_myocardium_sce, file.path(sce_path, "deSoysa_myocardium_E9.25_sce.rds"))
+
+```
+
+```{r}
+
+myocardium_sub$origin <- "Ren"
+
+################################################################################
+
+Feng_seurat <- readRDS(file.path(seurat_path, "Feng_seurat_embryonic.rds"))
+Feng_seurat <- AddMetaData(Feng_seurat, Feng_seurat$cell_type_spec, col.name = "ref_celltypes")
+unique(Feng_seurat$ref_celltypes)
+Feng_seurat$origin <- "Feng"
+Idents(Feng_seurat) <- "ref_celltypes"
+Feng_seurat <- subset(Feng_seurat, idents=c("ventricular_cm",
+                                            "atrial_cm",
+                                            "vascular_ec"))
+
+################################################################################
+
+deSoysa_myocardium_seurat <- readRDS(file.path(seurat_path, "deSoysa_myocardium_E9.25_seurat.rds"))
+deSoysa_myocardium_seurat <- AddMetaData(deSoysa_myocardium_seurat, deSoysa_myocardium_seurat$celltype, col.name = "ref_celltypes")
+unique(deSoysa_myocardium_seurat$ref_celltypes)
+deSoysa_myocardium_seurat$origin <- "deSoysa"
+
+################################################################################
+
+Linscheid_seurat <- readRDS(file.path(seurat_path, "Linscheid_seurat.rds")) 
+Linscheid_seurat <- AddMetaData(Linscheid_seurat, Linscheid_seurat$clustAnnot, col.name = "ref_celltypes")
+unique(Linscheid_seurat$ref_celltypes)
+Idents(Linscheid_seurat) <- "ref_celltypes"
+Linscheid_seurat$origin <- "Linscheid"
+Linscheid_seurat <- subset(Linscheid_seurat, idents=c("Vascular endothelial cells"))
+
+################################################################################
+
+myocardium_sub_merged <- merge(x = myocardium_sub, 
+                               y = c(Feng_seurat,
+                                     deSoysa_myocardium_seurat,
+                                     Linscheid_seurat),
+                               add.cell.ids = c("Ren",
+                                                "Feng",
+                                                "deSoysa",
+                                                "Linscheid"),
+                               project = "merged_with_refs")
+
+################################################################################
+
+myocardium_sub_merged <- AddMetaData(myocardium_sub_merged, myocardium_sub_merged$ref_celltypes, col.name = "ref_celltypes_renamed")
+unique(myocardium_sub_merged$ref_celltypes)
+
+"Vascular Endothelial" -> myocardium_sub_merged$ref_celltypes_renamed[which(myocardium_sub_merged$ref_celltypes == "vascular_ec")]
+"Atrial CM" -> myocardium_sub_merged$ref_celltypes_renamed[which(myocardium_sub_merged$ref_celltypes == "Atrial")]
+"Atrial CM" -> myocardium_sub_merged$ref_celltypes_renamed[which(myocardium_sub_merged$ref_celltypes == "atrial_cm")]
+"Vascular Endothelial" -> myocardium_sub_merged$ref_celltypes_renamed[which(myocardium_sub_merged$ref_celltypes == "Vascular endothelial cells")]
+"Ventricular CM" -> myocardium_sub_merged$ref_celltypes_renamed[which(myocardium_sub_merged$ref_celltypes == "ventricular_cm")]
+"Ventricular CM" -> myocardium_sub_merged$ref_celltypes_renamed[which(myocardium_sub_merged$ref_celltypes == "Ventricle")]
+
+unique(myocardium_sub_merged$ref_celltypes_renamed)
+
+################################################################################
+
+saveRDS(myocardium_sub_merged, file.path(seurat_path, "myocardium_sub_merged_w_refs.rds"))
+
+```
+
+```{r}
+
+myocardium_sub_merged <- readRDS(file.path(seurat_path, "myocardium_sub_merged_w_refs.rds"))
+
+DefaultAssay(myocardium_sub_merged) <- "RNA"
+
+myocardium_sub.list <- SplitObject(myocardium_sub_merged, split.by = "orig.ident")
+
+myocardium_sub.list <- lapply(X = myocardium_sub.list, FUN = function(x) {
+  x <- NormalizeData(x,
+                     verbose = FALSE)
+  x <- FindVariableFeatures(x, selection.method = "vst", 
+                            nfeatures = 2000,
+                            verbose = FALSE)
+})
+
+features <- SelectIntegrationFeatures(object.list = myocardium_sub.list, 
+                                      verbose = FALSE)
+
+anchors <- FindIntegrationAnchors(object.list = myocardium_sub.list, 
+                                  anchor.features = features,
+                                  verbose = FALSE)
+
+myocardium_sub_merged <- IntegrateData(anchorset = anchors,
+                                       k.weight = 70,
+                                       verbose = FALSE)
+
+DefaultAssay(myocardium_sub_merged) <- "integrated"
+myocardium_sub_merged <- ScaleData(myocardium_sub_merged, 
+                                   verbose = FALSE)
+
+
+
+myocardium_sub_merged <- RunPCA(myocardium_sub_merged, npcs = 50)
+
+saveRDS(myocardium_sub_merged, file.path(seurat_path, "myocardium_sub_integrated_w_refs.rds"))
+
+
+```
+
+```{r}
+
+elbow <- ElbowPlot(myocardium_sub_merged, reduction = "pca", ndims = 50)
+elbow
+
+
+
+pct <- myocardium_sub_merged[["pca"]]@stdev / sum(myocardium_sub_merged[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+
+co1 <- which(cumu >= 80 & pct <= 5)[1]
+co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), 
+            decreasing = T)[1] + 1
+
+co1 #38
+co2 #10
+
+min.pc <- min(co1, co2)
+
+PC_70_pct <- which(cumu >= 70)[1]
+PC_70_pct #32
+
+PC_75_pct <- which(cumu >= 75)[1]
+PC_75_pct #35
+
+PC_80_pct <- which(cumu >= 80)[1]
+PC_80_pct #38
+
+PC_85_pct <- which(cumu >= 85)[1]
+PC_85_pct #41
+
+PC_90_pct <- which(cumu >= 90)[1]
+PC_90_pct #44
+
+PC_95_pct <- which(cumu >= 95)[1]
+PC_95_pct #47
+
+
+```
+
+```{r}
+
+myocardium_sub_merged <- readRDS(file.path(seurat_path, "myocardium_sub_integrated_w_refs.rds"))
+
+DefaultAssay(myocardium_sub_merged) <- "integrated"
+
+PCs <- c(10,12,15,17,20,25, PC_70_pct, PC_75_pct, PC_80_pct, PC_85_pct, PC_90_pct, PC_95_pct)
+
+myocard_umap_path <- file.path(umap_path, "myocardium_integrated_w_refs")
+# dir.create(myocard_umap_path)
+
+for (i in 1:length(PCs)) {
+  
+  myocardium_sub_merged <- FindNeighbors(myocardium_sub_merged, 
+                               dims = 1:PCs[i],
+                               verbose = FALSE)
+
+  myocardium_sub_merged <- RunUMAP(myocardium_sub_merged, 
+                           dims=1:PCs[i],
+                           verbose = FALSE)
+
+  
+  dim_name <- paste0(PCs[i], sep ="_", "dims_umap.pdf")
+  
+
+  pdf(file.path(myocard_umap_path, paste0("myocardial",sep="_", dim_name)), height = 6, width = 10)
+  print(UMAPPlot(myocardium_sub_merged, group.by = "ref_celltypes_renamed") +
+          ggtitle(paste0("Myocardium Integrated with References", sep=" - ", PCs[i])))
+  dev.off()
+  
+}
+
+
+```
+
+```{r}
+
+myocardium_sub_merged <- FindNeighbors(myocardium_sub_merged, dims = 1:41)
+myocardium_sub_merged <- RunUMAP(myocardium_sub_merged, dims=1:41)
+
+
+UMAPPlot(myocardium_sub_merged, group.by = "origin")
+UMAPPlot(myocardium_sub_merged, group.by = "ref_celltypes_renamed")
+
+```
+
+```{r}
+
+myocardium_sub_merged_umap <- UMAPPlot(myocardium_sub_merged, group.by = "ref_celltypes_renamed")
+
+pdf(file.path(umap_path, "ref_celltypes_renamed_umap.pdf"), height=6, width=10)
+myocardium_sub_merged_umap
+dev.off()
+
+```
+
+```{r}
+
+unique(myocardium_sub_merged$ref_celltypes_renamed)
+
+ventricular_cells <- CellSelector(myocardium_sub_merged_umap)
+ventricular_cells <- c(ventricular_cells, CellSelector(myocardium_sub_merged_umap))
+unique(ventricular_cells) -> ventricular_cells
+ventricular_cells <- ventricular_cells[which(grepl("^Ren", ventricular_cells))]
+ventricular_cells <- substring(ventricular_cells,5)
+# saveRDS(ventricular_cells, file.path(cell_path, "ventricular_cells.rds"))
+ventricular_cells <- readRDS(file.path(cell_path, "ventricular_cells.rds"))
+
+atrial_cells <- CellSelector(myocardium_sub_merged_umap)
+atrial_cells <- c(atrial_cells, CellSelector(myocardium_sub_merged_umap))
+unique(atrial_cells) -> atrial_cells
+atrial_cells <- atrial_cells[which(grepl("^Ren", atrial_cells))]
+atrial_cells <- substring(atrial_cells,5)
+# saveRDS(atrial_cells, file.path(cell_path, "atrial_cells.rds"))
+atrial_cells <- readRDS(file.path(cell_path, "atrial_cells.rds"))
+
+
+OFT_cells <- CellSelector(myocardium_sub_merged_umap)
+OFT_cells <- c(OFT_cells, CellSelector(myocardium_sub_merged_umap))
+unique(OFT_cells) -> OFT_cells
+OFT_cells <- OFT_cells[which(grepl("^Ren", OFT_cells))]
+OFT_cells <- substring(OFT_cells,5)
+# saveRDS(OFT_cells, file.path(cell_path, "OFT_cells.rds"))
+OFT_cells <- readRDS(file.path(cell_path, "OFT_cells.rds"))
+
+AVC_cells <- CellSelector(myocardium_sub_merged_umap)
+AVC_cells <- c(AVC_cells, CellSelector(myocardium_sub_merged_umap))
+unique(AVC_cells) -> AVC_cells
+AVC_cells <- AVC_cells[which(grepl("^Ren", AVC_cells))]
+AVC_cells <- substring(AVC_cells,5)
+# saveRDS(AVC_cells, file.path(cell_path, "AVC_cells.rds"))
+AVC_cells <- readRDS(file.path(cell_path, "AVC_cells.rds"))
+
+
+SAN_cells <- CellSelector(myocardium_sub_merged_umap)
+SAN_cells <- c(SAN_cells, CellSelector(myocardium_sub_merged_umap))
+unique(SAN_cells) -> SAN_cells
+SAN_cells <- SAN_cells[which(grepl("^Ren", SAN_cells))]
+SAN_cells <- substring(SAN_cells,5)
+# saveRDS(SAN_cells, file.path(cell_path, "SAN_cells.rds"))
+SAN_cells <- readRDS(file.path(cell_path, "SAN_cells.rds"))
+
+
+vascular_cells <- CellSelector(myocardium_sub_merged_umap)
+vascular_cells <- c(vascular_cells, CellSelector(myocardium_sub_merged_umap))
+unique(vascular_cells) -> vascular_cells
+vascular_cells <- vascular_cells[which(grepl("^Ren", vascular_cells))]
+vascular_cells <- substring(vascular_cells,5)
+# saveRDS(vascular_cells, file.path(cell_path, "vascular_cells.rds"))
+vascular_cells <- readRDS(file.path(cell_path, "vascular_cells.rds"))
+
+
+```
+
+```{r}
+
+myocardium_sub <- readRDS(file.path(seurat_path, "myocardium_subset.rds"))
+
+myocardium_sub <- AddMetaData(myocardium_sub, rep(NA, length(row.names(myocardium_sub@meta.data))), col.name = "myocardium_celltype")
+
+"Ventricular CM" -> myocardium_sub@meta.data[ventricular_cells, "myocardium_celltype"]
+"Atrial CM" -> myocardium_sub@meta.data[atrial_cells, "myocardium_celltype"]
+"OFT" -> myocardium_sub@meta.data[OFT_cells, "myocardium_celltype"]
+"AVC" -> myocardium_sub@meta.data[AVC_cells, "myocardium_celltype"]
+"SAN" -> myocardium_sub@meta.data[SAN_cells, "myocardium_celltype"]
+"Vascular EC" -> myocardium_sub@meta.data[vascular_cells, "myocardium_celltype"]
+
+Idents(myocardium_sub) <- "integrated"
+myocardium_umap <- UMAPPlot(myocardium_sub, group.by = "myocardium_celltype")
+myocardium_umap
+
+# saveRDS(myocardium_sub, file.path(seurat_path, "myocardium_sub_manually_annoted_2.rds"))
+
+```
+
+```{r}
+
+DefaultAssay(myocardium_sub) <- "RNA"
+
+s.genes <- c("Mcm5","Pcna","Tyms","Fen1","Mcm2","Mcm4","Rrm1","Ung","Gins2","Mcm6","Cdca7","Dtl","Prim1","Uhrf1","Hells","Rfc2","Rpa2","Nasp","Rad51ap1","Gmnn","Wdr76","Slbp","Ccne2","Ubr7","Pold3","Msh2","Atad2","Rad51","Rrm2","Cdc45","Cdc6","Exo1","Tipin","Dscc1","Blm","Casp8ap2","Usp1","Clspn","Pola1","Chaf1b","Brip1","E2f8")
+
+g2m.genes <- c("Hmgb2","Cdk1","Nusap1","Ube2c","Birc5","Tpx2","Top2a","Ndc80","Cks2","Nuf2","Cks1b","Mki67","Tmpo","Cenpf","Tacc3","Fam64a","Smc4","Ccnb2","Ckap2l","Ckap2","Aurkb","Bub1","Kif11","Anp32e","Tubb4b","Gtse1","Kif20b","Hjurp","Cdca3","Hn1","Cdc20","Ttk","Cdc25c","Kif2c","Rangap1","Ncapd2","Dlgap5","Cdca2","Cdca8","Ect2","Kif23","Hmmr","Aurka","Psrc1","Anln","Lbr","Ckap5","Cenpe","Ctcf","Nek2","G2e3","Gas2l3","Cbx5","Cenpa")
+
+myocardium_sub <- CellCycleScoring(myocardium_sub, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
+
+saveRDS(myocardium_sub, file.path(seurat_path, "myocardium_sub_w_phases.rds"))
+
+```
+
+
+```{r}
+
+myocard_umap_path <- file.path(umap_path, "myocard")
+dir.create(myocard_umap_path)
+
+nfeat = c(1000,1500, 2000, 2500, 3000, 3500, 4000)
+
+for (i in 1:length(nfeat)) {
+
+  myocardium_sub <- readRDS(file.path(seurat_path, "myocardium_sub_w_phases.rds"))
+  
+  DefaultAssay(myocardium_sub) <- "RNA"
+  
+  myocardium_sub.list <- SplitObject(myocardium_sub, split.by = "orig.ident")
+  
+  myocardium_sub.list <- lapply(X = myocardium_sub.list, FUN = function(x) {
+    x <- NormalizeData(x,
+                       verbose = FALSE)
+    x <- FindVariableFeatures(x, selection.method = "vst", 
+                              nfeatures = nfeat[i],
+                              verbose = FALSE)
+  })
+  
+  features <- SelectIntegrationFeatures(object.list = myocardium_sub.list, 
+                                        nfeatures = nfeat[i],
+                                        verbose = FALSE)
+  
+  anchors <- FindIntegrationAnchors(object.list = myocardium_sub.list, 
+                                    anchor.features = features,
+                                    verbose = FALSE)
+  
+  myocardium_sub <- IntegrateData(anchorset = anchors,
+                                         verbose = FALSE)
+  
+  DefaultAssay(myocardium_sub) <- "integrated"
+  
+  myocardium_sub$CC.Difference <- myocardium_sub$S.Score - myocardium_sub$G2M.Score
+  myocardium_sub <- ScaleData(myocardium_sub, vars.to.regress = "CC.Difference", features = rownames(myocardium_sub))
+  
+  myocardium_sub <- RunPCA(myocardium_sub, npcs=50)
+  
+  pct <- myocardium_sub[["pca"]]@stdev / sum(myocardium_sub[["pca"]]@stdev) * 100
+  cumu <- cumsum(pct)
+  
+  PC_55_pct <- which(cumu >= 55)[1]
+  PC_55_pct 
+  
+  PC_60_pct <- which(cumu >= 60)[1]
+  PC_60_pct 
+  
+  PC_65_pct <- which(cumu >= 65)[1]
+  PC_65_pct 
+  
+  PC_70_pct <- which(cumu >= 70)[1]
+  PC_70_pct 
+  
+  PC_75_pct <- which(cumu >= 75)[1]
+  PC_75_pct 
+  
+  PC_80_pct <- which(cumu >= 80)[1]
+  PC_80_pct 
+  
+  PC_85_pct <- which(cumu >= 85)[1]
+  PC_85_pct 
+  
+  PC_90_pct <- which(cumu >= 90)[1]
+  PC_90_pct 
+  
+  PCs <- c(PC_55_pct, PC_60_pct, PC_65_pct, PC_70_pct, 
+           PC_75_pct, PC_80_pct, PC_85_pct, PC_90_pct)
+
+  for (j in 1:length(PCs)) {
+    
+    myocardium_sub <- FindNeighbors(myocardium_sub, 
+                                 dims = 1:PCs[j],
+                                 verbose = FALSE)
+  
+    myocardium_sub <- RunUMAP(myocardium_sub, 
+                             dims=1:PCs[j],
+                             verbose = FALSE)
+    
+    myocardium_sub <- FindClusters(myocardium_sub, 
+                                  resolution = 0.8,
+                                  verbose = FALSE)
+    
+    nfeat_path <- file.path(myocard_umap_path, paste0(nfeat[i], sep="_", "features"))
+    dir.create(nfeat_path)
+    
+    dim_title <- paste0(PCs[j], sep =" ", "Dimensions")
+    
+    pdf(file.path(nfeat_path, paste0(PCs[j], sep="_", "dims.pdf")), height = 6, width = 10)
+    print(UMAPPlot(myocardium_sub, group.by = "myocardium_celltype") +
+            ggtitle(paste0("Cell Type UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "Phase") +
+            ggtitle(paste0("Phase UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "seurat_clusters") +
+            ggtitle(paste0("Cluster UMAP", sep = " - ", dim_title)))
+    dev.off()
+    
+  }
+
+}
+
+
+```
+
+
+```{r}
+
+nfeat = c(3000)
+
+for (i in 1:length(nfeat)) {
+
+  myocardium_sub <- readRDS(file.path(seurat_path, "myocardium_sub_w_phases.rds"))
+  
+  DefaultAssay(myocardium_sub) <- "RNA"
+  
+  myocardium_sub.list <- SplitObject(myocardium_sub, split.by = "orig.ident")
+  
+  myocardium_sub.list <- lapply(X = myocardium_sub.list, FUN = function(x) {
+    x <- NormalizeData(x,
+                       verbose = FALSE)
+    x <- FindVariableFeatures(x, selection.method = "vst", 
+                              nfeatures = nfeat[i],
+                              verbose = FALSE)
+  })
+  
+  features <- SelectIntegrationFeatures(object.list = myocardium_sub.list, 
+                                        nfeatures = nfeat[i],
+                                        verbose = FALSE)
+  
+  anchors <- FindIntegrationAnchors(object.list = myocardium_sub.list, 
+                                    anchor.features = features,
+                                    verbose = FALSE)
+  
+  myocardium_sub <- IntegrateData(anchorset = anchors,
+                                         verbose = FALSE)
+  
+  DefaultAssay(myocardium_sub) <- "integrated"
+  
+  myocardium_sub$CC.Difference <- myocardium_sub$S.Score - myocardium_sub$G2M.Score
+  myocardium_sub <- ScaleData(myocardium_sub, vars.to.regress = "CC.Difference", features = rownames(myocardium_sub))
+  
+  myocardium_sub <- RunPCA(myocardium_sub, npcs=50)
+  
+  pct <- myocardium_sub[["pca"]]@stdev / sum(myocardium_sub[["pca"]]@stdev) * 100
+  cumu <- cumsum(pct)
+  
+  PC_55_pct <- which(cumu >= 55)[1]
+  PC_55_pct 
+  
+  PC_60_pct <- which(cumu >= 60)[1]
+  PC_60_pct 
+  
+  PC_65_pct <- which(cumu >= 65)[1]
+  PC_65_pct 
+  
+  PC_70_pct <- which(cumu >= 70)[1]
+  PC_70_pct 
+  
+  PC_75_pct <- which(cumu >= 75)[1]
+  PC_75_pct 
+  
+  PC_80_pct <- which(cumu >= 80)[1]
+  PC_80_pct 
+  
+  PC_85_pct <- which(cumu >= 85)[1]
+  PC_85_pct 
+  
+  PC_90_pct <- which(cumu >= 90)[1]
+  PC_90_pct 
+  
+  PCs <- c(25,26,28,29)
+
+  for (j in 1:length(PCs)) {
+    
+    myocardium_sub <- FindNeighbors(myocardium_sub, 
+                                 dims = 1:PCs[j],
+                                 verbose = FALSE)
+  
+    myocardium_sub <- RunUMAP(myocardium_sub, 
+                             dims=1:PCs[j],
+                             verbose = FALSE)
+    
+    myocardium_sub <- FindClusters(myocardium_sub, 
+                                  resolution = 0.8,
+                                  verbose = FALSE)
+    
+    nfeat_path <- file.path(myocard_umap_path, paste0(nfeat[i], sep="_", "features"))
+    dir.create(nfeat_path)
+    
+    dim_title <- paste0(PCs[j], sep =" ", "Dimensions")
+    
+    pdf(file.path(nfeat_path, paste0(PCs[j], sep="_", "dims.pdf")), height = 6, width = 10)
+    print(UMAPPlot(myocardium_sub, group.by = "myocardium_celltype") +
+            ggtitle(paste0("Cell Type UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "Phase") +
+            ggtitle(paste0("Phase UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "seurat_clusters") +
+            ggtitle(paste0("Cluster UMAP", sep = " - ", dim_title)))
+    dev.off()
+    
+  }
+  
+}
+
+```
+
+```{r}
+
+myocard_umap_path <- file.path(umap_path, "myocard")
+dir.create(myocard_umap_path)
+
+nfeat = c(1000,1500, 2000, 2500, 3000, 3500, 4000)
+
+for (i in 1:length(nfeat)) {
+
+  myocardium_sub <- readRDS(file.path(seurat_path, "myocardium_sub_w_phases.rds"))
+  
+  DefaultAssay(myocardium_sub) <- "RNA"
+  
+  myocardium_sub.list <- SplitObject(myocardium_sub, split.by = "orig.ident")
+  
+  myocardium_sub.list <- lapply(X = myocardium_sub.list, FUN = function(x) {
+    x <- NormalizeData(x,
+                       verbose = FALSE)
+    x <- FindVariableFeatures(x, selection.method = "vst", 
+                              nfeatures = nfeat[i],
+                              verbose = FALSE)
+  })
+  
+  features <- SelectIntegrationFeatures(object.list = myocardium_sub.list, 
+                                        nfeatures = nfeat[i],
+                                        verbose = FALSE)
+  
+  anchors <- FindIntegrationAnchors(object.list = myocardium_sub.list, 
+                                    anchor.features = features,
+                                    verbose = FALSE)
+  
+  myocardium_sub <- IntegrateData(anchorset = anchors,
+                                         verbose = FALSE)
+  
+  DefaultAssay(myocardium_sub) <- "integrated"
+  
+
+  myocardium_sub <- ScaleData(myocardium_sub, vars.to.regress = c("S.Score", "G2M.Score"), 
+                              features = rownames(myocardium_sub))
+  
+  myocardium_sub <- RunPCA(myocardium_sub, npcs=50)
+  
+  pct <- myocardium_sub[["pca"]]@stdev / sum(myocardium_sub[["pca"]]@stdev) * 100
+  cumu <- cumsum(pct)
+  
+  PC_55_pct <- which(cumu >= 55)[1]
+  PC_55_pct 
+  
+  PC_60_pct <- which(cumu >= 60)[1]
+  PC_60_pct 
+  
+  PC_65_pct <- which(cumu >= 65)[1]
+  PC_65_pct 
+  
+  PC_70_pct <- which(cumu >= 70)[1]
+  PC_70_pct 
+  
+  PC_75_pct <- which(cumu >= 75)[1]
+  PC_75_pct 
+  
+  PC_80_pct <- which(cumu >= 80)[1]
+  PC_80_pct 
+  
+  PC_85_pct <- which(cumu >= 85)[1]
+  PC_85_pct 
+  
+  PC_90_pct <- which(cumu >= 90)[1]
+  PC_90_pct 
+  
+  PCs <- c(PC_55_pct, PC_60_pct, PC_65_pct, PC_70_pct, 
+           PC_75_pct, PC_80_pct, PC_85_pct, PC_90_pct)
+
+  for (j in 1:length(PCs)) {
+    
+    myocardium_sub <- FindNeighbors(myocardium_sub, 
+                                 dims = 1:PCs[j],
+                                 verbose = FALSE)
+  
+    myocardium_sub <- RunUMAP(myocardium_sub, 
+                             dims=1:PCs[j],
+                             verbose = FALSE)
+    
+    myocardium_sub <- FindClusters(myocardium_sub, 
+                                  resolution = 0.8,
+                                  verbose = FALSE)
+    
+    nfeat_path <- file.path(myocard_umap_path, paste0(nfeat[i], sep="_", "features"))
+    dir.create(nfeat_path)
+    
+    dim_title <- paste0(PCs[j], sep =" ", "Dimensions")
+    
+    pdf(file.path(nfeat_path, paste0(PCs[j], sep="_", "dims.pdf")), height = 6, width = 10)
+    print(UMAPPlot(myocardium_sub, group.by = "myocardium_celltype") +
+            ggtitle(paste0("Cell Type UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "Phase") +
+            ggtitle(paste0("Phase UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "seurat_clusters") +
+            ggtitle(paste0("Cluster UMAP", sep = " - ", dim_title)))
+    dev.off()
+    
+  }
+
+}
+
+
+```
+
+
+```{r}
+
+myocard_umap_path <- file.path(umap_path, "myocard")
+dir.create(myocard_umap_path)
+
+nfeat = c(3000)
+
+for (i in 1:length(nfeat)) {
+
+  myocardium_sub <- readRDS(file.path(seurat_path, "myocardium_sub_w_phases.rds"))
+  
+  DefaultAssay(myocardium_sub) <- "RNA"
+  
+  myocardium_sub.list <- SplitObject(myocardium_sub, split.by = "orig.ident")
+  
+  myocardium_sub.list <- lapply(X = myocardium_sub.list, FUN = function(x) {
+    x <- NormalizeData(x,
+                       verbose = FALSE)
+    x <- FindVariableFeatures(x, selection.method = "vst", 
+                              nfeatures = nfeat[i],
+                              verbose = FALSE)
+  })
+  
+  features <- SelectIntegrationFeatures(object.list = myocardium_sub.list, 
+                                        nfeatures = nfeat[i],
+                                        verbose = FALSE)
+  
+  anchors <- FindIntegrationAnchors(object.list = myocardium_sub.list, 
+                                    anchor.features = features,
+                                    verbose = FALSE)
+  
+  myocardium_sub <- IntegrateData(anchorset = anchors,
+                                         verbose = FALSE)
+  
+  DefaultAssay(myocardium_sub) <- "integrated"
+  
+
+  myocardium_sub <- ScaleData(myocardium_sub, vars.to.regress = c("S.Score", "G2M.Score"), 
+                              features = rownames(myocardium_sub))
+  
+  myocardium_sub <- RunPCA(myocardium_sub, npcs=50)
+  
+  pct <- myocardium_sub[["pca"]]@stdev / sum(myocardium_sub[["pca"]]@stdev) * 100
+  cumu <- cumsum(pct)
+  
+  PC_55_pct <- which(cumu >= 55)[1]
+  PC_55_pct 
+  
+  PC_60_pct <- which(cumu >= 60)[1]
+  PC_60_pct 
+  
+  PC_65_pct <- which(cumu >= 65)[1]
+  PC_65_pct 
+  
+  PC_70_pct <- which(cumu >= 70)[1]
+  PC_70_pct 
+  
+  PC_75_pct <- which(cumu >= 75)[1]
+  PC_75_pct 
+  
+  PC_80_pct <- which(cumu >= 80)[1]
+  PC_80_pct 
+  
+  PC_85_pct <- which(cumu >= 85)[1]
+  PC_85_pct 
+  
+  PC_90_pct <- which(cumu >= 90)[1]
+  PC_90_pct 
+  
+  PCs <- c(19,20,22,23)
+
+  for (j in 1:length(PCs)) {
+    
+    myocardium_sub <- FindNeighbors(myocardium_sub, 
+                                 dims = 1:PCs[j],
+                                 verbose = FALSE)
+  
+    myocardium_sub <- RunUMAP(myocardium_sub, 
+                             dims=1:PCs[j],
+                             verbose = FALSE)
+    
+    myocardium_sub <- FindClusters(myocardium_sub, 
+                                  resolution = 0.8,
+                                  verbose = FALSE)
+    
+    nfeat_path <- file.path(myocard_umap_path, paste0(nfeat[i], sep="_", "features"))
+    dir.create(nfeat_path)
+    
+    dim_title <- paste0(PCs[j], sep =" ", "Dimensions")
+    
+    pdf(file.path(nfeat_path, paste0(PCs[j], sep="_", "dims.pdf")), height = 6, width = 10)
+    print(UMAPPlot(myocardium_sub, group.by = "myocardium_celltype") +
+            ggtitle(paste0("Cell Type UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "Phase") +
+            ggtitle(paste0("Phase UMAP", sep = " - ", dim_title)))
+    print(UMAPPlot(myocardium_sub, group.by = "seurat_clusters") +
+            ggtitle(paste0("Cluster UMAP", sep = " - ", dim_title)))
+    dev.off()
+    
+  }
+
+}
+
+
+```
+
+```{r}
+
+myocardium_sub <- readRDS(file.path(seurat_path, "myocardium_sub_w_phases.rds"))
+
+DefaultAssay(myocardium_sub) <- "RNA"
+
+myocardium_sub.list <- SplitObject(myocardium_sub, split.by = "orig.ident")
+
+myocardium_sub.list <- lapply(X = myocardium_sub.list, FUN = function(x) {
+  x <- NormalizeData(x,
+                     verbose = FALSE)
+  x <- FindVariableFeatures(x, selection.method = "vst", 
+                            nfeatures = 3000,
+                            verbose = FALSE)
+})
+
+features <- SelectIntegrationFeatures(object.list = myocardium_sub.list, 
+                                      nfeatures = 3000,
+                                      verbose = FALSE)
+
+anchors <- FindIntegrationAnchors(object.list = myocardium_sub.list, 
+                                  anchor.features = features,
+                                  verbose = FALSE)
+
+myocardium_sub <- IntegrateData(anchorset = anchors,
+                                       verbose = FALSE)
+
+DefaultAssay(myocardium_sub) <- "integrated"
+
+
+myocardium_sub <- ScaleData(myocardium_sub, vars.to.regress = c("S.Score", "G2M.Score"), 
+                            features = rownames(myocardium_sub))
+
+myocardium_sub <- RunPCA(myocardium_sub, npcs=50)
+
+myocardium_sub <- FindNeighbors(myocardium_sub, 
+                             dims = 1:21,
+                             verbose = FALSE)
+
+myocardium_sub <- RunUMAP(myocardium_sub, 
+                         dims=1:21,
+                         verbose = FALSE)
+
+myocardium_sub <- FindClusters(myocardium_sub, 
+                              resolution = 0.8,
+                              verbose = FALSE)
+
+
+celltype_umap <- UMAPPlot(myocardium_sub, group.by = "myocardium_celltype")
+celltype_umap
+
+```
+
+```{r}
+
+# ventricular_cells <- CellSelector(celltype_umap)
+# ventricular_cells <- c(ventricular_cells, CellSelector(celltype_umap))
+# ventricular_cells <- unique(ventricular_cells)
+# atrial_cells <- CellSelector(celltype_umap)
+# OFT_cells <- CellSelector(celltype_umap)
+# AVC_cells <- CellSelector(celltype_umap)
+# SAN_cells <- CellSelector(celltype_umap)
+# vascular_ec_cells <- CellSelector(celltype_umap)
+# unknown_1_cells <- CellSelector(celltype_umap)
+# unknown_2_cells <- CellSelector(celltype_umap)
+# 
+# myocardium_sub <- AddMetaData(myocardium_sub, rep(NA, length(row.names(myocardium_sub@meta.data))), col.name = "myocardium_celltype_final")
+# 
+# 
+# "Ventricular CM" -> myocardium_sub@meta.data[ventricular_cells, "myocardium_celltype_final"]
+# "Atrial CM" -> myocardium_sub@meta.data[atrial_cells, "myocardium_celltype_final"]
+# "OFT" -> myocardium_sub@meta.data[OFT_cells, "myocardium_celltype_final"]
+# "AVC" -> myocardium_sub@meta.data[AVC_cells, "myocardium_celltype_final"]
+# "SAN" -> myocardium_sub@meta.data[SAN_cells, "myocardium_celltype_final"]
+# "Vascular EC" -> myocardium_sub@meta.data[vascular_ec_cells, "myocardium_celltype_final"]
+# "Unknown 1" -> myocardium_sub@meta.data[unknown_1_cells, "myocardium_celltype_final"]
+# "Unknown 2" -> myocardium_sub@meta.data[unknown_2_cells, "myocardium_celltype_final"]
+#
+
+
+# "Stromal" -> myocardium_sub@meta.data[vascular_ec_cells, "myocardium_celltype_final"]
+# saveRDS(myocardium_sub, file.path(seurat_path, "myocardium_sub_annoted_cc_regressed.rds"))
+
+pdf(file.path(proj_path, "myocardium_celltype_umap.pdf"), height = 6, width = 10)
+UMAPPlot(myocardium_sub, group.by = "myocardium_celltype_final") +
+  ggtitle("Myocardium Cell Types - CC Regressed")
+dev.off()
+
+pdf(file.path(proj_path, "myocardium_culster_umap.pdf"), height = 6, width = 10)
+UMAPPlot(myocardium_sub, group.by = "seurat_clusters") +
+  ggtitle("Myocardium Clusters - CC Regressed")
+dev.off()
+
+pdf(file.path(proj_path, "myocardium_condition_umap.pdf"), height = 6, width = 10)
+UMAPPlot(myocardium_sub, group.by = "orig.ident") +
+  ggtitle("Myocardium Conditions - CC Regressed")
+dev.off()
+
+pdf(file.path(proj_path, "myocardium_phase_umap.pdf"), height = 6, width = 10)
+UMAPPlot(myocardium_sub, group.by = "Phase") +
+  ggtitle("Myocardium Cell-cycle Phases - CC Regressed")
+dev.off()
+
+
+pdf_combine(input = c(file.path(proj_path, "myocardium_celltype_umap.pdf"),
+                      file.path(proj_path, "myocardium_culster_umap.pdf"),
+                      file.path(proj_path, "myocardium_condition_umap.pdf"), 
+                      file.path(proj_path, "myocardium_phase_umap.pdf")),
+            output = file.path(proj_path, "myocardium_umaps.pdf"))
+
+```
+
+```{r}
+
+DefaultAssay(myocardium_sub) <- "RNA"
+Idents(myocardium_sub) <- "myocardium_celltype_final"
+
+conserved_markers <- {}
+celltype <- unique(myocardium_sub$myocardium_celltype_final)
+
+for (i in 1:length(celltype)) {
+  conserved_markers[[i]] <- FindConservedMarkers(myocardium_sub, 
+                                  ident.1 = celltype[i],
+                                  grouping.var = "orig.ident")
+}
+
+names(conserved_markers) <- celltype
+
+write.xlsx(conserved_markers, file.path(markers_path, "Myocardium_conserved_markers.xlsx"), rowNames = TRUE)
+
+```
+
+```{r}
+
+cluster_umap <- UMAPPlot(myocardium_sub, group.by = "seurat_clusters")
+cluster_umap
+
+
+myocardium_sub <- AddMetaData(myocardium_sub, rep(NA, length(row.names(myocardium_sub@meta.data))), col.name = "manual_clusters")
+
+```
+
+
+```{r}
+
+Idents(myocardium_sub) <- "myocardium_celltype_final"
+ventricle_sub <- subset(myocardium_sub, idents = "Ventricular CM")
+
+```
+
+```{r}
+
+################################################################################
+
+Feng_seurat <- readRDS(file.path(seurat_path, "Feng_seurat_embryonic.rds"))
+
+Idents(Feng_seurat) <- "zone"
+Feng_seurat <- subset(Feng_seurat, idents = c("LV", "RV"))
+
+Idents(Feng_seurat) <- "cell_type_spec"
+Feng_seurat <- subset(Feng_seurat, idents = "ventricular_cm")
+
+Feng_seurat$origin <- "Feng"
+
+# saveRDS(Feng_seurat, file.path(seurat_path, "Feng_ventricular_seurat.rds"))
+
+Feng_ventricular_sce <- as.SingleCellExperiment(Feng_seurat)
+Feng_ventricular_sce <- logNormCounts(Feng_ventricular_sce)
+
+# saveRDS(Feng_ventricular_sce, file.path(sce_path, "Feng_ventricular_sce.rds"))
+
+################################################################################
+
+mat <- fread("https://cells.ucsc.edu/mouse-cardiac/Ventricle_subcluster/exprMatrix.tsv.gz")
+meta <- data.frame(fread("https://cells.ucsc.edu/mouse-cardiac/Ventricle_subcluster/meta.tsv"), row.names=1)
+genes = mat[,1][[1]]
+genes = gsub(".+[|]", "", genes)
+mat = data.frame(mat[,-1], row.names=genes)
+deSoysa_seurat <- CreateSeuratObject(counts = mat, project = "mouse-cardiac", meta.data=meta)
+deSoysa_seurat <- AddMetaData(deSoysa_seurat, meta$Cluster, col.name = "zone")
+deSoysa_seurat <- AddMetaData(deSoysa_seurat, meta$Time.Point, col.name = "Time.Point")
+
+Idents(deSoysa_seurat) <- "Time.Point"
+deSoysa_seurat <- subset(deSoysa_seurat, idents="E9.25")
+
+deSoysa_seurat$origin <- "deSoysa"
+
+saveRDS(deSoysa_seurat, file.path(seurat_path, "deSoysa_ventricular_seurat.rds"))
+
+deSoysa_ventricular_sce <- as.SingleCellExperiment(deSoysa_seurat)
+deSoysa_ventricular_sce <- logNormCounts(deSoysa_ventricular_sce)
+
+saveRDS(deSoysa_ventricular_sce, file.path(sce_path, "deSoysa_ventricular_sce.rds"))
+
+```
+
+
+
+
+
+
+```{r}
+
+Idents(ventricle_sub) <- "orig.ident"
+wild_ventricle_sub <- subset(ventricle_sub, idents = "wildtype")
+wild_ventricular_data <- GetAssayData(wild_ventricle_sub, assay = "RNA", slot = "counts")
+
+Feng_ventricular_sce <- readRDS(file.path(sce_path, "Feng_ventricular_sce.rds"))
+deSoysa_ventricular_sce <- readRDS(file.path(sce_path, "deSoysa_ventricular_sce.rds")) 
+
+wild_pred_data <- SingleR(test = wild_ventricular_data, 
+                           ref = list(Feng_ventricular_sce,
+                                      deSoysa_ventricular_sce),
+                           labels = list(Feng_ventricular_sce$zone,
+                                         deSoysa_ventricular_sce$zone),
+                           assay.type.test = "counts",
+                           assay.type.ref = "logcounts")
+
+saveRDS(wild_pred_data, file.path(pred_data_path, "wild_pred_data_ventricular_Feng_deSoysa.rds"))
+
+
+
+
+knock_ventricle_sub <- subset(ventricle_sub, idents = "knockout")
+knock_ventricular_data <- GetAssayData(knock_ventricle_sub, assay = "RNA", slot = "counts")
+
+
+
+
+knock_pred_data <- SingleR(test = knock_ventricular_data, 
+                           ref = list(Feng_ventricular_sce,
+                                      deSoysa_ventricular_sce),
+                           labels = list(Feng_ventricular_sce$zone,
+                                         deSoysa_ventricular_sce$zone),
+                           assay.type.test = "counts",
+                           assay.type.ref = "logcounts")
+
+
+saveRDS(knock_pred_data, file.path(pred_data_path, "knock_pred_data_ventricular_Feng_deSoysa.rds"))
+
+
+
+
+
+
+ventricle_sub <- AddMetaData(ventricle_sub, 
+                              c(wild_pred_data$labels, 
+                                knock_pred_data$labels), 
+                              col.name = "zone")
+
+
+UMAPPlot(ventricle_sub, group.by = "zone") + ggtitle("Ventricular zone UMAP")
+
+UMAPPlot(ventricle_sub, group.by = "orig.ident") + ggtitle("Condition UMAP")
+
+saveRDS(ventricle_sub, file.path(seurat_path, "ventricular_sub_w_zones.rds"))
+
+```
+
+
+
+
+```{r}
+
+ventricle_sub <- readRDS(file.path(seurat_path, "ventricular_sub_w_zones.rds"))
+
+DefaultAssay(ventricle_sub) <- "RNA"
+
+ventricle_sub.list <- SplitObject(ventricle_sub, split.by = "orig.ident")
+
+ventricle_sub.list <- lapply(X = ventricle_sub.list, FUN = function(x) {
+  x <- NormalizeData(x,
+                     verbose = FALSE)
+  x <- FindVariableFeatures(x, selection.method = "vst", 
+                            nfeatures = 1000,
+                            verbose = FALSE)
+})
+
+features <- SelectIntegrationFeatures(object.list = ventricle_sub.list, 
+                                      nfeatures = 1000,
+                                      verbose = FALSE)
+
+anchors <- FindIntegrationAnchors(object.list = ventricle_sub.list, 
+                                  anchor.features = features,
+                                  verbose = FALSE)
+
+ventricle_sub <- IntegrateData(anchorset = anchors,
+                                       verbose = FALSE)
+
+DefaultAssay(ventricle_sub) <- "integrated"
+
+
+ventricle_sub <- ScaleData(ventricle_sub, vars.to.regress = c("S.Score", "G2M.Score"), 
+                            features = rownames(ventricle_sub))
+
+ventricle_sub <- RunPCA(ventricle_sub, npcs=50)
+
+elbow <- ElbowPlot(ventricle_sub, reduction = "pca", ndims = 50)
+elbow
+
+
+ventricle_sub <- FindNeighbors(ventricle_sub, 
+                             dims = 1:25,
+                             verbose = FALSE)
+
+ventricle_sub <- RunUMAP(ventricle_sub, 
+                         dims=1:25,
+                         verbose = FALSE)
+
+ventricle_sub <- FindClusters(ventricle_sub, 
+                              resolution = 0.4,
+                              verbose = FALSE)
+
+
+zone_umap <- UMAPPlot(ventricle_sub, group.by = "zone")
+zone_umap
+
+ventricle_cluster_umap <- UMAPPlot(ventricle_sub, group.by = "seurat_clusters")
+ventricle_cluster_umap
+
+```
+
+```{r}
+
+DefaultAssay(ventricle_sub) <- "RNA"
+Idents(ventricle_sub) <- "zone"
+
+conserved_markers <- {}
+zone <- unique(ventricle_sub$zone)
+
+for (i in 1:length(zone)) {
+  conserved_markers[[i]] <- FindConservedMarkers(ventricle_sub, 
+                                  ident.1 = zone[i],
+                                  grouping.var = "orig.ident")
+}
+
+names(conserved_markers) <- zone
+
+write.xlsx(conserved_markers, file.path(markers_path, "ventricle_zones_conserved_markers.xlsx"), rowNames = TRUE)
+
+```
+
+
+
+
+```{r}
+
+DefaultAssay(myocardium_sub) <- "RNA"
+
+s.genes <- c("Mcm5","Pcna","Tyms","Fen1","Mcm2","Mcm4","Rrm1","Ung","Gins2","Mcm6","Cdca7","Dtl","Prim1","Uhrf1","Hells","Rfc2","Rpa2","Nasp","Rad51ap1","Gmnn","Wdr76","Slbp","Ccne2","Ubr7","Pold3","Msh2","Atad2","Rad51","Rrm2","Cdc45","Cdc6","Exo1","Tipin","Dscc1","Blm","Casp8ap2","Usp1","Clspn","Pola1","Chaf1b","Brip1","E2f8")
+
+g2m.genes <- c("Hmgb2","Cdk1","Nusap1","Ube2c","Birc5","Tpx2","Top2a","Ndc80","Cks2","Nuf2","Cks1b","Mki67","Tmpo","Cenpf","Tacc3","Fam64a","Smc4","Ccnb2","Ckap2l","Ckap2","Aurkb","Bub1","Kif11","Anp32e","Tubb4b","Gtse1","Kif20b","Hjurp","Cdca3","Hn1","Cdc20","Ttk","Cdc25c","Kif2c","Rangap1","Ncapd2","Dlgap5","Cdca2","Cdca8","Ect2","Kif23","Hmmr","Aurka","Psrc1","Anln","Lbr","Ckap5","Cenpe","Ctcf","Nek2","G2e3","Gas2l3","Cbx5","Cenpa")
+
+myocardium_sub <- CellCycleScoring(myocardium_sub, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
+
+DefaultAssay(myocardium_sub) <- "integrated"
+
+myocardium_sub <- ScaleData(myocardium_sub, vars.to.regress = c("S.Score", "G2M.Score"))
+
+DefaultAssay(myocardium_sub) <- "RNA"
+
+myocardium_sub.list <- SplitObject(myocardium_sub, split.by = "orig.ident")
+
+myocardium_sub.list <- lapply(X = myocardium_sub.list, FUN = function(x) {
+  x <- NormalizeData(x,
+                     verbose = FALSE)
+  x <- FindVariableFeatures(x, selection.method = "vst", 
+                            nfeatures = 3000,
+                            verbose = FALSE)
+})
+
+features <- SelectIntegrationFeatures(object.list = myocardium_sub.list, 
+                                      nfeatures = 3000,
+                                      verbose = FALSE)
+
+anchors <- FindIntegrationAnchors(object.list = myocardium_sub.list, 
+                                  anchor.features = features,
+                                  verbose = FALSE)
+
+myocardium_sub <- IntegrateData(anchorset = anchors,
+                                       verbose = FALSE)
+
+DefaultAssay(myocardium_sub) <- "integrated"
+myocardium_sub <- ScaleData(myocardium_sub, 
+                                   verbose = FALSE)
+
+myocardium_sub <- RunPCA(myocardium_sub, npcs=50)
+
+
+elbow <- ElbowPlot(myocardium_sub, reduction = "pca", ndims = 50)
+elbow
+
+
+pct <- myocardium_sub[["pca"]]@stdev / sum(myocardium_sub[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+
+
+PC_55_pct <- which(cumu >= 55)[1]
+PC_55_pct #20
+
+PC_60_pct <- which(cumu >= 60)[1]
+PC_60_pct #23
+
+PC_65_pct <- which(cumu >= 65)[1]
+PC_65_pct #26
+
+PC_70_pct <- which(cumu >= 70)[1]
+PC_70_pct #30
+
+PC_75_pct <- which(cumu >= 75)[1]
+PC_75_pct #33
+
+PC_80_pct <- which(cumu >= 80)[1]
+PC_80_pct #36
+
+PC_85_pct <- which(cumu >= 85)[1]
+PC_85_pct #40
+
+PC_90_pct <- which(cumu >= 90)[1]
+PC_90_pct #43
+
+PC_95_pct <- which(cumu >= 95)[1]
+PC_95_pct #47
+
+co1 <- which(cumu >= 80 & pct <= 5)[1]
+co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), 
+            decreasing = T)[1] + 1
+
+co1 #36
+co2 #14
+
+min.pc <- min(co1, co2)
+min.pc
+
+
+
+myocardium_sub <- FindNeighbors(myocardium_sub, dims = 1:34)
+myocardium_sub <- RunUMAP(myocardium_sub, dims=1:34)
+myocardium_sub <- FindClusters(myocardium_sub,
+                              resolution = 1.2,
+                              verbose = FALSE)
+
+celltype_umap <- UMAPPlot(myocardium_sub, group.by = "myocardium_celltype_final")
+celltype_umap
+
+
+```
+
+```{r}
+
+FeaturePlot(myocardium_sub, features = c("Rspo3", "Tbx3", "Bmp2", "Smpx"))
+FeaturePlot(myocardium_sub, features = c("Nr2f2", "Cav1", "Nr2f1", "Kcna5", "Stard10", "Nppa"))
+FeaturePlot(myocardium_sub, features = c("Homer2","Myl2", "Bmp4", "Col1a2", "Isl1"))
+
+
+DefaultAssay(myocardium_sub) <- "RNA"
+Idents(myocardium_sub) <- "orig.ident"
+wild_ventricular_sub <- subset(myocardium_sub, idents = "wildtype")
+
+
+wild_ventricular_sub <- NormalizeData(wild_ventricular_sub)
+wild_ventricular_sub <- FindVariableFeatures(wild_ventricular_sub, selection.method = "vst", nfeatures = 2000)
+wild_ventricular_sub <- ScaleData(wild_ventricular_sub)
+wild_ventricular_sub <- RunPCA(wild_ventricular_sub)
+
+wild_ventricular_sub <- FindNeighbors(wild_ventricular_sub, dims = 1:30)
+wild_ventricular_sub <- RunUMAP(wild_ventricular_sub, dims=1:30)
+
+UMAPPlot(wild_ventricular_sub, group.by = "myocardium_celltype_final") + ggtitle("Celltype 34 UMAP")
+UMAPPlot(wild_ventricular_sub, group.by = "Phase") + ggtitle("Cell-cycle Phase UMAPUMAP")
+
+FeaturePlot(wild_ventricular_sub, features = c("Rspo3", "Tbx3", "Bmp2", "Smpx"))
+FeaturePlot(wild_ventricular_sub, features = c("Nr2f2", "Cav1", "Nr2f1", "Kcna5", "Stard10", "Nppa"))
+FeaturePlot(wild_ventricular_sub, features = c("Homer2","Myl2", "Bmp4", "Col1a2", "Isl1"))
+
+
+```
+
+
+```{r}
+
+
+Idents(myocardium_sub) <- "myocardium_celltype_final"
+ventricular_sub <- subset(myocardium_sub, idents = "Ventricular CM")
+
+
+DefaultAssay(ventricular_sub) <- "RNA"
+
+ventricular_sub.list <- SplitObject(ventricular_sub, split.by = "orig.ident")
+
+ventricular_sub.list <- lapply(X = ventricular_sub.list, FUN = function(x) {
+  x <- NormalizeData(x,
+                     verbose = FALSE)
+  x <- FindVariableFeatures(x, selection.method = "vst", 
+                            nfeatures = 1000,
+                            verbose = FALSE)
+})
+
+features <- SelectIntegrationFeatures(object.list = ventricular_sub.list, 
+                                      nfeatures = 1000,
+                                      verbose = FALSE)
+
+anchors <- FindIntegrationAnchors(object.list = ventricular_sub.list, 
+                                  anchor.features = features,
+                                  verbose = FALSE)
+
+ventricular_sub <- IntegrateData(anchorset = anchors,
+                                       verbose = FALSE)
+
+DefaultAssay(ventricular_sub) <- "integrated"
+
+ventricular_sub <- ScaleData(ventricular_sub, vars.to.regress = c("S.Score", "G2M.Score"))
+
+ventricular_sub <- RunPCA(ventricular_sub, npcs=50)
+
+
+elbow <- ElbowPlot(ventricular_sub, reduction = "pca", ndims = 50)
+elbow
+
+
+ventricular_sub <- FindNeighbors(ventricular_sub, dims = 1:30)
+ventricular_sub <- RunUMAP(ventricular_sub, dims=1:30)
+
+UMAPPlot(ventricular_sub, group.by = "myocardium_celltype_final") + ggtitle("Celltype 34 UMAP")
+UMAPPlot(ventricular_sub, group.by = "Phase") + ggtitle("Cell-cycle Phase UMAPUMAP")
+
+
+
+
+# DefaultAssay(ventricular_sub) <- "RNA"
+# ventricular_sub <- NormalizeData(ventricular_sub)
+# ventricular_sub <- FindVariableFeatures(ventricular_sub, selection.method = "vst")
+# ventricular_sub <- ScaleData(ventricular_sub, vars.to.regress = c("S.Score", "G2M.Score"))
+# 
+# ventricular_sub <- RunUMAP(ventricular_sub, features = c("Col2a1", "Gja1", "Tgfbr3","Inafm2", "Pcsk6", 
+#                                                          "Hs6st2","Cacna2d2", "Id2", "Tbx5"))
+# 
+# FeaturePlot(ventricular_sub, features = c("Col2a1", "Gja1", "Tgfbr3","Inafm2", "Pcsk6", "Hs6st2","Cacna2d2", "Id2", "Tbx5"))
+
+
+
+
+
+
+Idents(ventricular_sub) <- "orig.ident"
+wild_ventricular_sub <- subset(ventricular_sub, idents = "wildtype")
+
+Idents(wild_ventricular_sub) <- "Phase"
+wild_ventricular_G1 <- subset(wild_ventricular_sub, idents = "G1")
+
+DefaultAssay(wild_ventricular_G1) <- "RNA"
+
+wild_ventricular_G1 <- NormalizeData(wild_ventricular_G1)
+wild_ventricular_G1 <- FindVariableFeatures(wild_ventricular_G1, selection.method = "vst", nfeatures = 3000)
+# wild_ventricular <- ScaleData(wild_ventricular, vars.to.regress = c("S.Score", "G2M.Score"))
+wild_ventricular_G1 <- ScaleData(wild_ventricular_G1)
+
+wild_ventricular_G1 <- RunPCA(wild_ventricular_G1, npcs=50)
+wild_ventricular_G1 <- FindNeighbors(wild_ventricular_G1, dims = 1:30)
+wild_ventricular_G1 <- RunUMAP(wild_ventricular_G1, dims=1:30)
+
+# wild_ventricular <- RunUMAP(wild_ventricular, features = c("Tbx5", "Gja1", "Mfap2", "Phc2"))
+FeaturePlot(wild_ventricular_G1, features = c("Tbx5", "Gja1", "Mfap2", "Phc2"))
+
+
+
+wild_ventricular_G2M <- subset(wild_ventricular_sub, idents = "G2M")
+wild_ventricular_S <- subset(wild_ventricular_sub, idents = "S")
+
+
+```
+
+
+```{r}
+
+DefaultAssay(ventricular_sub) <- "RNA"
+Idents(ventricular_sub) <- "orig.ident"
+wild_ventricular_sub <- subset(ventricular_sub, idents = "wildtype")
+
+wild_ventricular_sub <- NormalizeData(wild_ventricular_sub)
+wild_ventricular_sub <- FindVariableFeatures(wild_ventricular_sub, selection.method = "vst", nfeatures = 3000)
+wild_ventricular_sub <- ScaleData(wild_ventricular_sub)
+wild_ventricular_sub <- RunPCA(wild_ventricular_sub)
+
+
+wild_ventricular_sub <- FindNeighbors(wild_ventricular_sub)
+
+wild_ventricular_sub <- RunUMAP(wild_ventricular_sub)
+UMAPPlot(wild_ventricular_sub, group.by = "Phase") + ggtitle("Cell-cycle Phase UMAP")
+
+wild_ventricular_sub <- RunTSNE(wild_ventricular_sub)
+TSNEPlot(wild_ventricular_sub, group.by = "Phase") + ggtitle("Cell-cycle Phase UMAP")
+
+
+
+# 
+# 
+# Idents(wild_ventricular_sub) <- "Phase"
+# wild_ventricular_G1 <- subset(wild_ventricular_sub, idents = "G1")
+# wild_ventricular_G2M <- subset(wild_ventricular_sub, idents = "G2M")
+# wild_ventricular_S <- subset(wild_ventricular_sub, idents = "S")
+# 
+# 
+# 
+# 
+# 
+# wild_ventricular_G1 <- NormalizeData(wild_ventricular_G1)
+# wild_ventricular_G1 <- FindVariableFeatures(wild_ventricular_G1, selection.method = "vst", nfeatures = 100)
+# wild_ventricular_G1 <- ScaleData(wild_ventricular_G1)
+# wild_ventricular_G1 <- RunPCA(wild_ventricular_G1, npcs = 100)
+# 
+# 
+# 
+# elbow <- ElbowPlot(wild_ventricular_G1, reduction = "pca", ndims = 100)
+# elbow
+# 
+# pct <- wild_ventricular_G1[["pca"]]@stdev / sum(wild_ventricular_G1[["pca"]]@stdev) * 100
+# cumu <- cumsum(pct)
+# 
+# wild_ventricular_G1 <- FindNeighbors(wild_ventricular_G1, dims = 1:50)
+# wild_ventricular_G1 <- RunUMAP(wild_ventricular_G1, dims=1:50)
+# wild_ventricular_G1 <- FindClusters(wild_ventricular_G1, resolution = 1)
+# 
+# UMAPPlot(wild_ventricular_G1, group.by = "seurat_clusters") 
+# 
+# 
+# FeaturePlot(wild_ventricular_G1, features = c("Col2a1", "Gja1", "Tgfbr3","Inafm2", "Pcsk6", "Hs6st2","Cacna2d2", "Id2", "Tbx5"))
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# wild_ventricular_G2M <- NormalizeData(wild_ventricular_G2M)
+# wild_ventricular_G2M <- FindVariableFeatures(wild_ventricular_G2M, selection.method = "vst", nfeatures = 100)
+# wild_ventricular_G2M <- ScaleData(wild_ventricular_G2M)
+# wild_ventricular_G2M <- RunPCA(wild_ventricular_G2M)
+# 
+# 
+# wild_ventricular_G2M <- RunUMAP(wild_ventricular_G2M, features = c("Tbx5", "Phc2"))
+# FeaturePlot(wild_ventricular_G2M, features = c("Tbx5", "Phc2"))
+
+
+
+# 
+# 
+# DefaultAssay(ventricular_sub) <- "RNA"
+# 
+# ventricular_sub.list <- SplitObject(ventricular_sub, split.by = "orig.ident")
+# 
+# ventricular_sub.list <- lapply(X = ventricular_sub.list, FUN = function(x) {
+#   x <- NormalizeData(x, verbose = FALSE)
+#   x <- FindVariableFeatures(x, selection.method = "vst", 
+#                             nfeatures = 1000, verbose = FALSE)
+# })
+# 
+# features <- SelectIntegrationFeatures(object.list = ventricular_sub.list, 
+#                                       nfeatures = 1000,
+#                                       verbose = FALSE)
+# 
+# anchors <- FindIntegrationAnchors(object.list = ventricular_sub.list, 
+#                                   anchor.features = features,
+#                                   verbose = FALSE)
+# 
+# ventricular_sub <- IntegrateData(anchorset = anchors,
+#                                        verbose = FALSE)
+# 
+# DefaultAssay(ventricular_sub) <- "integrated"
+# ventricular_sub <- ScaleData(ventricular_sub, 
+#                                    verbose = FALSE)
+# 
+# ventricular_sub <- RunPCA(ventricular_sub, npcs=50)
+# 
+# # c("Col2a1", "Gja1", "Tgfbr3","Inafm2", "Pcsk6", "Hs6st2","Cacna2d2", "Id2")
+# 
+# 
+# ventricular_sub <- FindNeighbors(ventricular_sub, dims = 1:20)
+# ventricular_sub <- RunUMAP(ventricular_sub, dims=1:20)
+# ventricular_sub <- FindClusters(ventricular_sub,
+#                               resolution = 0.6,
+#                               verbose = FALSE)
+# 
+# UMAPPlot(ventricular_sub, group.by = "seurat_clusters") + ggtitle("Cluster UMAP")
+# 
+# 
+# 
+# FeaturePlot(ventricular_sub, features = c("Col2a1", "Gja1", "Tgfbr3","Inafm2", "Pcsk6", "Hs6st2","Cacna2d2", "Id2", "Tbx5"))
+
+
+
+
+```
+
+
+```{r}
+
+# pdf(file.path(umap_path, "myocardium_condition_umap.pdf"), height=6, width=14)
+# UMAPPlot(myocardium_sub, group.by = "orig.ident") + ggtitle("Condition UMAP")
+# dev.off()
+# 
+# pdf(file.path(umap_path, "myocardium_celltype_orig_umap.pdf"), height=6, width=14)
+# UMAPPlot(myocardium_sub, group.by = "myocardium_celltype") + ggtitle("Celltype UMAP - original")
+# dev.off()
+# 
+# pdf(file.path(umap_path, "myocardium_cluster_umap.pdf"), height=6, width=14)
+# UMAPPlot(myocardium_sub, group.by = "seurat_clusters") + ggtitle("Cluster UMAP")
+# dev.off()
+
+```
+
+
+
+
+
+
+```{r}
+
+myocardium_Celltype_umap <- UMAPPlot(myocardium_sub, group.by = "myocardium_celltype") + ggtitle("Celltype UMAP")
+myocardium_Celltype_umap
+
+myocardium_sub <- AddMetaData(myocardium_sub, rep(NA, length(row.names(myocardium_sub@meta.data))), col.name = "myocardium_celltype_final")
+
+cells <- CellSelector(myocardium_Celltype_umap)
+cells <- c(cells, CellSelector(myocardium_Celltype_umap))
+
+"Ventricular CM" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+"OFT" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+"Atrial CM" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+"SAN" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+"AVC" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+"Vascular EC" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+"Unknown 1" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+"Unknown 2" -> myocardium_sub@meta.data[cells, "myocardium_celltype_final"]
+
+
+pdf(file.path(umap_path, "myocardium_celltype_umap.pdf"), height=6, width=14)
+UMAPPlot(myocardium_sub, group.by = "myocardium_celltype_final") + ggtitle("Celltype UMAP")
+dev.off()
+
+pdf(file.path(umap_path, "myocardium_cluster_umap.pdf"), height=6, width=14)
+UMAPPlot(myocardium_sub, group.by = "seurat_clusters") + ggtitle("Cluster UMAP")
+dev.off()
+
+pdf(file.path(umap_path, "myocardium_condition_umap.pdf"), height=6, width=14)
+UMAPPlot(myocardium_sub, group.by = "orig.ident") + ggtitle("Condition UMAP")
+dev.off()
+
+# saveRDS(myocardium_sub, file.path(seurat_path, "myocardium_sub_manually_annotated.rds"))
+
+```
+
+```{r}
+
+DefaultAssay(myocardium_sub) <- "RNA"
+Idents(myocardium_sub) <- "myocardium_celltype_final"
+
+conserved_markers <- {}
+celltype <- unique(myocardium_sub$myocardium_celltype_final)
+
+for (i in 1:length(celltype)) {
+  conserved_markers[[i]] <- FindConservedMarkers(myocardium_sub, 
+                                  ident.1 = celltype[i],
+                                  grouping.var = "orig.ident")
+}
+
+names(conserved_markers) <- celltype
+
+write.xlsx(conserved_markers, file.path(markers_path, "Myocardium_conserved_markers.xlsx"), rowNames = TRUE)
+
+```
+
+
+```{r}
+DefaultAssay(myocardium_sub) <- "integrated"
+myocardium_sub <- FindNeighbors(myocardium_sub, dims = 1:PC_75_pct)
+myocardium_sub <- RunUMAP(myocardium_sub, dims=1:PC_75_pct)
+myocardium_sub <- FindClusters(myocardium_sub,resolution = c(0.5))
+
+UMAPPlot(myocardium_sub, group.by = "myocardium_celltype_final") + ggtitle("Celltype UMAP")
+UMAPPlot(myocardium_sub, group.by = "seurat_clusters") + ggtitle("Cluster UMAP")
+# UMAPPlot(myocardium_sub, group.by = "Cao.Spielmann_stringR_celltype") + ggtitle("Cao-Spielmann UMAP")
+
+
+```
+
+```{r}
+
+Idents(myocardium_sub) <- "myocardium_celltype_final"
+ventricular_sub <- subset(myocardium_sub, idents= "Ventricular CM")
+
+DefaultAssay(ventricular_sub) <- "RNA"
+
+ventricular_sub.list <- SplitObject(ventricular_sub, split.by = "orig.ident")
+
+ventricular_sub.list <- lapply(X = ventricular_sub.list, FUN = function(x) {
+  x <- NormalizeData(x, verbose = FALSE)
+  x <- FindVariableFeatures(x, selection.method = "vst", 
+                            nfeatures = 500, 
+                            verbose = FALSE)
+})
+
+features <- SelectIntegrationFeatures(object.list = ventricular_sub.list, 
+                                      verbose = FALSE)
+anchors <- FindIntegrationAnchors(object.list = ventricular_sub.list, 
+                                  anchor.features = features,
+                                  verbose = FALSE)
+ventricular_sub <- IntegrateData(anchorset = anchors,
+                                       verbose = FALSE)
+DefaultAssay(ventricular_sub) <- "integrated"
+ventricular_sub <- ScaleData(ventricular_sub, 
+                                   verbose = FALSE)
+
+ventricular_sub <- RunPCA(ventricular_sub, npcs=50)
+
+
+elbow <- ElbowPlot(ventricular_sub, reduction = "pca", ndims = 50)
+elbow
+
+pct <- ventricular_sub[["pca"]]@stdev / sum(ventricular_sub[["pca"]]@stdev) * 100
+cumu <- cumsum(pct)
+
+
+
+ventricular_sub <- FindNeighbors(ventricular_sub, dims = 1:25)
+ventricular_sub <- RunUMAP(ventricular_sub, dims=1:25)
+ventricular_sub <- FindClusters(ventricular_sub,
+                              resolution = c(0.7),
+                              verbose = FALSE)
+
+
+UMAPPlot(ventricular_sub, group.by = "myocardium_celltype_final") + ggtitle("Celltype UMAP")
+UMAPPlot(ventricular_sub, group.by = "seurat_clusters") + ggtitle("Cluster UMAP")
+UMAPPlot(ventricular_sub, group.by = "orig.ident") + ggtitle("Cluster UMAP")
+
+
+
+
+
+DefaultAssay(ventricular_sub) <- "RNA"
+Idents(ventricular_sub) <- "seurat_clusters"
+
+conserved_markers <- {}
+clusters <- c(0,1,2,3)
+
+for (i in 1:length(clusters)) {
+  conserved_markers[[i]] <- FindConservedMarkers(ventricular_sub, 
+                                  ident.1 = clusters[i],
+                                  grouping.var = "orig.ident")
+}
+
+names(conserved_markers) <- clusters
+
+write.xlsx(conserved_markers, file.path(markers_path, "ventricle_conserved_markers.xlsx"), rowNames = TRUE)
+
+
+
+```
+
+```{r}
+
+atrial_sub <- subset(myocardium_sub, idents="Atrial CM")
+OFT_sub <- subset(myocardium_sub, idents="OFT")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+go.ora <- function(df, up_down, dir, fileName, db, plot_height, plot_width, pAdjustMethod, e_height, e_width) {
+
+# Get names of the genes
+gene_list <- row.names(df)
+
+# ORA GO
+ora_GO <- enrichGO(gene = gene_list,
+               OrgDb= db,
+               keyType = "SYMBOL",
+               pAdjustMethod = pAdjustMethod,
+               qvalueCutoff = 1)
+
+write.csv(ora_GO@result, file.path(dir, paste0(up_down, sep="_", fileName, sep="_", "ORA_GO.csv")))
+
+
+bp <- barplot(ora_GO, 
+        showCategory = ora_GO@result$Description, 
+        color = "pvalue") 
+
+bp <- bp + theme(legend.position="none")
+
+
+pdf(file.path(dir, 
+              paste0(up_down, sep="_", fileName, sep="_", "ORA_GO_barplot.pdf")), 
+    height = plot_height, width=plot_width)
+print(bp)
+dev.off()
+
+
+
+ora_GO_2 <- pairwise_termsim(ora_GO)
+
+emap <- emapplot(ora_GO_2, color = "pvalue")
+
+pdf(file.path(dir, 
+              paste0(up_down, sep="_", fileName, sep="_", "ORA_GO_emap.pdf")), 
+    height = e_height, 
+    width=e_width)
+print(emap)
+dev.off()
+
+
+}
+
+```
+
+```{r}
+
+
+go.gsea <- function(df, up_down, dir, fileName, db, plot_height, plot_width, pAdjustMethod, e_height, e_width) {
+
+# Get fold change values with names 
+log2FC_list <- df$avg_log2FC
+names(log2FC_list) <- rownames(df)
+log2FC_list <- na.omit(log2FC_list)
+log2FC_list = sort(log2FC_list, decreasing = TRUE)
+
+# GSEA GO
+gsea_GO <- gseGO(geneList=log2FC_list,
+                    ont ="ALL", 
+                    keyType = "SYMBOL",
+                    OrgDb = db,
+                    pAdjustMethod = pAdjustMethod,
+                 minGSSize = 3)
+
+write.csv(gsea_GO@result, file.path(dir, paste0(up_down, sep="_", fileName, sep="_", "GSEA_GO.csv")))
+
+
+dp <- dotplot(gsea_GO, 
+        showCategory = gsea_GO@result$Description, 
+        color = "pvalue")
+
+dp <- dp + theme(legend.position="none")
+
+
+pdf(file.path(dir, 
+              paste0(up_down, sep="_", fileName, sep="_", "GSEA_GO_dotplot.pdf")), 
+    height = plot_height, width=plot_width)
+print(dp)
+dev.off()
+
+
+
+
+gsea_GO_2 <- pairwise_termsim(gsea_GO)
+emap <- emapplot(gsea_GO_2, color = "pvalue")
+
+pdf(file.path(dir, 
+              paste0(up_down, sep="_", fileName, sep="_", "GSEA_GO_emap.pdf")), 
+    height = e_height, 
+    width=e_width)
+print(emap)
+dev.off()
+
+
+}
+
+
+```
+
+```{r}
+
+kegg.ora <- function(df, up_down, dir, fileName, db, plot_height, plot_width, pAdjustMethod, e_height, e_width) {
+
+# Get names of the genes
+gene_list <- row.names(df)
+
+# Convert the names of the genes to ENTREZID for KEGG
+entrz_id <- bitr(gene_list, fromType="SYMBOL", toType=c("ENTREZID"), OrgDb="org.Mm.eg.db")
+
+# ORA KEGG
+ora_KEGG <- enrichKEGG(gene = entrz_id$ENTREZID,
+               organism = 'mmu',
+               use_internal_data = T,
+               pAdjustMethod = pAdjustMethod,
+               qvalueCutoff = 1)
+
+write.csv(ora_KEGG@result, file.path(dir, paste0(up_down, sep="_", fileName, sep="_", "ORA_KEGG.csv")))
+
+bp <- barplot(ora_KEGG, 
+        showCategory = ora_KEGG@result$Description, 
+        color = "pvalue")
+
+bp <- bp + theme(legend.position="none")
+
+pdf(file.path(dir, 
+              paste0(up_down, sep="_", fileName, sep="_", "ORA_KEGG_barplot.pdf")), 
+    height = plot_height, width=plot_width)
+print(bp)
+dev.off()
+
+ora_KEGG_2 <- pairwise_termsim(ora_KEGG)
+
+emap <- emapplot(ora_KEGG_2, color = "pvalue")
+
+pdf(file.path(dir, 
+              paste0(up_down, sep="_", fileName, sep="_", "ORA_KEGG_emap.pdf")), 
+    height = e_height, 
+    width=e_width)
+print(emap)
+dev.off()
+
+}
+
+```
+
+```{r}
+
+# GSEA KEGG
+
+kegg.gsea <- function(df, up_down, dir, fileName, db, plot_height, plot_width, pAdjustMethod, e_height, e_width) {
+  
+# Get names of the genes
+gene_list <- row.names(df)
+
+# Get fold change values with ENTREZID as names 
+entrz_id <- bitr(gene_list, fromType="SYMBOL", toType=c("ENTREZID"), OrgDb="org.Mm.eg.db")
+log2FC_list <- df$avg_log2FC
+names(log2FC_list) <- entrz_id$ENTREZID
+log2FC_list <- na.omit(log2FC_list)
+log2FC_list = sort(log2FC_list, decreasing = TRUE)
+
+gsea_KEGG <- gseKEGG(geneList=log2FC_list,
+                     organism = 'mmu',
+                     use_internal_data = T,
+                     pAdjustMethod = pAdjustMethod,
+                 minGSSize = 2)
+
+write.csv(gsea_KEGG@result, file.path(dir, paste0(up_down, sep="_", fileName, sep="_", "GSEA_KEGG.csv")))
+
+dp <- dotplot(gsea_KEGG, 
+        showCategory = gsea_KEGG@result$Description, 
+        color = "pvalue")
+
+dp <- dp + theme(legend.position="none")
+
+pdf(file.path(dir,
+              paste0(up_down, sep="_", fileName, sep="_", "GSEA_KEGG_dotplot.pdf")), 
+    height = plot_height, width=plot_width)
+print(dp)
+dev.off()
+
+
+
+
+gsea_KEGG_2 <- pairwise_termsim(gsea_KEGG)
+emap <- emapplot(gsea_KEGG_2, color = "pvalue")
+
+pdf(file.path(dir, 
+              paste0(up_down, sep="_", fileName, sep="_", "GSEA_KEGG_emap.pdf")), 
+    height = e_height, 
+    width=e_width)
+print(emap)
+dev.off()
+
+}
+
+```
+
+```{r}
+
+Idents(myocardium_sub) <- "CELLTYPE_2"
+atrial <- subset(myocardium_sub, idents = "Atrial CM")
+
+DefaultAssay(atrial) <- "RNA"
+
+# DGE analysis 
+Idents(atrial) <- "orig.ident"
+atrial_knock_vs_WT <- FindMarkers(atrial, ident.1 = "knockout", ident.2 = "wildtype", logfc.threshold= 0)
+
+atrial_knock_vs_WT <- atrial_knock_vs_WT[order(-atrial_knock_vs_WT$avg_log2FC), ]
+
+write.csv(atrial_knock_vs_WT, file.path(dge_path, "knockout_vs_WT_atrial.csv"))
+
+
+library(EnhancedVolcano)
+
+
+atrial_knock_vs_WT_plot <- EnhancedVolcano(atrial_knock_vs_WT, 
+                x="avg_log2FC", y="p_val", 
+                lab= row.names(atrial_knock_vs_WT),
+                pCutoff = 0.05, FCcutoff = 0.3,
+                title = "Knockout vs WT - Atrial",
+                subtitle = bquote(italic("FC cutoff = 0.3     p-value cutoff = 0.05")))
+
+pdf(file.path(volcano_path, "atrial_knock_vs_WT_plot.pdf"), height=6, width=8)
+atrial_knock_vs_WT_plot
+dev.off()
+
+
+
+atrial_knock_vs_WT_up <- atrial_knock_vs_WT[which(atrial_knock_vs_WT$avg_log2FC >= 0.5 & atrial_knock_vs_WT$p_val <= 0.05), ]
+# atrial_knock_vs_WT_up_50 <- atrial_knock_vs_WT_up[1:50, ]
+
+atrial_knock_vs_WT_down <- atrial_knock_vs_WT[which(atrial_knock_vs_WT$avg_log2FC <= -0.5 & atrial_knock_vs_WT$p_val <= 0.05), ]
+atrial_knock_vs_WT_down <- atrial_knock_vs_WT_down[order(atrial_knock_vs_WT_down$avg_log2FC), ]
+# atrial_knock_vs_WT_down_50 <- atrial_knock_vs_WT_down[1:50, ]
+
+
+
+
+# GO ORA
+
+# UP
+go.ora(atrial_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.ora(atrial_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# GO GSEA
+
+# UP
+go.gsea(atrial_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.gsea(atrial_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG ORA
+
+# UP
+kegg.ora(atrial_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.ora(atrial_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG GSEA
+
+# UP
+kegg.gsea(atrial_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.gsea(atrial_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "atrial_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+```
+
+```{r}
+
+Idents(myocardium_sub) <- "CELLTYPE_2"
+ventricle <- subset(myocardium_sub, idents = "Ventricular CM")
+
+DefaultAssay(ventricle) <- "RNA"
+
+# DGE analysis 
+Idents(ventricle) <- "orig.ident"
+ventricle_knock_vs_WT <- FindMarkers(ventricle, ident.1 = "knockout", ident.2 = "wildtype", logfc.threshold= 0)
+
+ventricle_knock_vs_WT <- ventricle_knock_vs_WT[order(-ventricle_knock_vs_WT$avg_log2FC), ]
+
+write.csv(ventricle_knock_vs_WT, file.path(dge_path, "knockout_vs_WT_ventricle.csv"))
+
+
+ventricle_knock_vs_WT_plot <- EnhancedVolcano(ventricle_knock_vs_WT, 
+                x="avg_log2FC", y="p_val", 
+                lab= row.names(ventricle_knock_vs_WT),
+                pCutoff = 0.05, FCcutoff = 0.3,
+                title = "Knockout vs WT - Ventricle",
+                subtitle = bquote(italic("FC cutoff = 0.3     p-value cutoff = 0.05")))
+
+pdf(file.path(volcano_path, "ventricle_knock_vs_WT_plot.pdf"), height=6, width=8)
+ventricle_knock_vs_WT_plot
+dev.off()
+
+
+
+ventricle_knock_vs_WT_up <- ventricle_knock_vs_WT[which(ventricle_knock_vs_WT$avg_log2FC >= 0.5 & ventricle_knock_vs_WT$p_val <= 0.05), ]
+# ventricle_knock_vs_WT_up_50 <- ventricle_knock_vs_WT_up[1:50, ]
+
+ventricle_knock_vs_WT_down <- ventricle_knock_vs_WT[which(ventricle_knock_vs_WT$avg_log2FC <= -0.5 & ventricle_knock_vs_WT$p_val <= 0.05), ]
+ventricle_knock_vs_WT_down <- ventricle_knock_vs_WT_down[order(ventricle_knock_vs_WT_down$avg_log2FC), ]
+# ventricle_knock_vs_WT_down_50 <- ventricle_knock_vs_WT_down[1:50, ]
+
+
+
+
+# GO ORA
+
+# UP
+go.ora(ventricle_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.ora(ventricle_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# GO GSEA
+
+# UP
+go.gsea(ventricle_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.gsea(ventricle_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+# KEGG ORA
+
+# UP
+kegg.ora(ventricle_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.ora(ventricle_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG GSEA
+
+# UP
+kegg.gsea(ventricle_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.gsea(ventricle_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "ventricle_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+```
+
+```{r}
+
+Idents(myocardium_sub) <- "CELLTYPE_2"
+SAN <- subset(myocardium_sub, idents = "SAN")
+
+DefaultAssay(SAN) <- "RNA"
+
+# DGE analysis
+Idents(SAN) <- "orig.ident"
+SAN_knock_vs_WT <- FindMarkers(SAN, ident.1 = "knockout", ident.2 = "wildtype", logfc.threshold= 0)
+
+SAN_knock_vs_WT <- SAN_knock_vs_WT[order(-SAN_knock_vs_WT$avg_log2FC), ]
+
+write.csv(SAN_knock_vs_WT, file.path(dge_path, "knockout_vs_WT_SAN.csv"))
+
+
+library(EnhancedVolcano)
+
+
+SAN_knock_vs_WT_plot <- EnhancedVolcano(SAN_knock_vs_WT,
+                x="avg_log2FC", y="p_val",
+                lab= row.names(SAN_knock_vs_WT),
+                pCutoff = 0.05, FCcutoff = 0.3,
+                title = "Knockout vs WT - SAN",
+                subtitle = bquote(italic("FC cutoff = 0.3     p-value cutoff = 0.05")))
+
+pdf(file.path(volcano_path, "SAN_knock_vs_WT_plot.pdf"), height=6, width=8)
+SAN_knock_vs_WT_plot
+dev.off()
+
+
+
+SAN_knock_vs_WT_up <- SAN_knock_vs_WT[which(SAN_knock_vs_WT$avg_log2FC >= 0.5 & SAN_knock_vs_WT$p_val <= 0.05), ]
+# SAN_knock_vs_WT_up_50 <- SAN_knock_vs_WT_up[1:50, ]
+
+SAN_knock_vs_WT_down <- SAN_knock_vs_WT[which(SAN_knock_vs_WT$avg_log2FC <= -0.5 & SAN_knock_vs_WT$p_val <= 0.05), ]
+SAN_knock_vs_WT_down <- SAN_knock_vs_WT_down[order(SAN_knock_vs_WT_down$avg_log2FC), ]
+# SAN_knock_vs_WT_down_50 <- SAN_knock_vs_WT_down[1:50, ]
+
+
+
+
+# GO ORA
+
+# UP
+go.ora(SAN_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.ora(SAN_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# GO GSEA
+
+# UP
+go.gsea(SAN_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.gsea(SAN_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG ORA
+
+# UP
+kegg.ora(SAN_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.ora(SAN_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG GSEA
+
+# UP
+kegg.gsea(SAN_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.gsea(SAN_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "SAN_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+```
+
+```{r}
+
+Idents(myocardium_sub) <- "CELLTYPE_2"
+OFT <- subset(myocardium_sub, idents = "OFT")
+
+DefaultAssay(OFT) <- "RNA"
+
+# DGE analysis
+Idents(OFT) <- "orig.ident"
+OFT_knock_vs_WT <- FindMarkers(OFT, ident.1 = "knockout", ident.2 = "wildtype", logfc.threshold= 0)
+
+OFT_knock_vs_WT <- OFT_knock_vs_WT[order(-OFT_knock_vs_WT$avg_log2FC), ]
+
+write.csv(OFT_knock_vs_WT, file.path(dge_path, "knockout_vs_WT_OFT.csv"))
+
+
+library(EnhancedVolcano)
+
+
+OFT_knock_vs_WT_plot <- EnhancedVolcano(OFT_knock_vs_WT,
+                x="avg_log2FC", y="p_val",
+                lab= row.names(OFT_knock_vs_WT),
+                pCutoff = 0.05, FCcutoff = 0.3,
+                title = "Knockout vs WT - OFT",
+                subtitle = bquote(italic("FC cutoff = 0.3     p-value cutoff = 0.05")))
+
+pdf(file.path(volcano_path, "OFT_knock_vs_WT_plot.pdf"), height=6, width=8)
+OFT_knock_vs_WT_plot
+dev.off()
+
+
+
+OFT_knock_vs_WT_up <- OFT_knock_vs_WT[which(OFT_knock_vs_WT$avg_log2FC >= 0.5 & OFT_knock_vs_WT$p_val <= 0.05), ]
+# OFT_knock_vs_WT_up_50 <- OFT_knock_vs_WT_up[1:50, ]
+
+OFT_knock_vs_WT_down <- OFT_knock_vs_WT[which(OFT_knock_vs_WT$avg_log2FC <= -0.5 & OFT_knock_vs_WT$p_val <= 0.05), ]
+OFT_knock_vs_WT_down <- OFT_knock_vs_WT_down[order(OFT_knock_vs_WT_down$avg_log2FC), ]
+# OFT_knock_vs_WT_down_50 <- OFT_knock_vs_WT_down[1:50, ]
+
+
+
+
+# GO ORA
+
+# UP
+go.ora(OFT_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.ora(OFT_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# GO GSEA
+
+# UP
+go.gsea(OFT_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.gsea(OFT_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG ORA
+
+# UP
+kegg.ora(OFT_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.ora(OFT_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG GSEA
+
+# UP
+kegg.gsea(OFT_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.gsea(OFT_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "OFT_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+```
+
+```{r}
+
+Idents(myocardium_sub) <- "CELLTYPE_2"
+AVC <- subset(myocardium_sub, idents = "AVC")
+
+DefaultAssay(AVC) <- "RNA"
+
+# DGE analysis
+Idents(AVC) <- "orig.ident"
+AVC_knock_vs_WT <- FindMarkers(AVC, ident.1 = "knockout", ident.2 = "wildtype", logfc.threshold= 0)
+
+AVC_knock_vs_WT <- AVC_knock_vs_WT[order(-AVC_knock_vs_WT$avg_log2FC), ]
+
+write.csv(AVC_knock_vs_WT, file.path(dge_path, "knockout_vs_WT_AVC.csv"))
+
+
+library(EnhancedVolcano)
+
+
+AVC_knock_vs_WT_plot <- EnhancedVolcano(AVC_knock_vs_WT,
+                x="avg_log2FC", y="p_val",
+                lab= row.names(AVC_knock_vs_WT),
+                pCutoff = 0.05, FCcutoff = 0.3,
+                title = "Knockout vs WT - AVC",
+                subtitle = bquote(italic("FC cutoff = 0.3     p-value cutoff = 0.05")))
+
+pdf(file.path(volcano_path, "AVC_knock_vs_WT_plot.pdf"), height=6, width=8)
+AVC_knock_vs_WT_plot
+dev.off()
+
+
+
+AVC_knock_vs_WT_up <- AVC_knock_vs_WT[which(AVC_knock_vs_WT$avg_log2FC >= 0.5 & AVC_knock_vs_WT$p_val <= 0.05), ]
+# AVC_knock_vs_WT_up_50 <- AVC_knock_vs_WT_up[1:50, ]
+
+AVC_knock_vs_WT_down <- AVC_knock_vs_WT[which(AVC_knock_vs_WT$avg_log2FC <= -0.5 & AVC_knock_vs_WT$p_val <= 0.05), ]
+AVC_knock_vs_WT_down <- AVC_knock_vs_WT_down[order(AVC_knock_vs_WT_down$avg_log2FC), ]
+# AVC_knock_vs_WT_down_50 <- AVC_knock_vs_WT_down[1:50, ]
+
+
+
+
+# GO ORA
+
+# UP
+go.ora(AVC_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.ora(AVC_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# GO GSEA
+
+# UP
+go.gsea(AVC_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.gsea(AVC_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG ORA
+
+# UP
+kegg.ora(AVC_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.ora(AVC_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG GSEA
+
+# UP
+kegg.gsea(AVC_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.gsea(AVC_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AVC_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+```
+
+```{r}
+
+Idents(myocardium_sub) <- "CELLTYPE_2"
+AV <- subset(myocardium_sub, idents = "Atrial/Ventricular")
+
+DefaultAssay(AV) <- "RNA"
+
+# DGE analysis
+Idents(AV) <- "orig.ident"
+AV_knock_vs_WT <- FindMarkers(AV, ident.1 = "knockout", ident.2 = "wildtype", logfc.threshold= 0)
+
+AV_knock_vs_WT <- AV_knock_vs_WT[order(-AV_knock_vs_WT$avg_log2FC), ]
+
+write.csv(AV_knock_vs_WT, file.path(dge_path, "knockout_vs_WT_cluster_w_both_atrial_ventricular.csv"))
+
+
+library(EnhancedVolcano)
+
+
+AV_knock_vs_WT_plot <- EnhancedVolcano(AV_knock_vs_WT,
+                x="avg_log2FC", y="p_val",
+                lab= row.names(AV_knock_vs_WT),
+                pCutoff = 0.05, FCcutoff = 0.3,
+                title = "Knockout vs WT - cluster with both atrial & ventricular",
+                subtitle = bquote(italic("FC cutoff = 0.3     p-value cutoff = 0.05")))
+
+pdf(file.path(volcano_path, "cluster_w_both_atrial_ventricular_knock_vs_WT_plot.pdf"), height=6, width=8)
+AV_knock_vs_WT_plot
+dev.off()
+
+
+
+AV_knock_vs_WT_up <- AV_knock_vs_WT[which(AV_knock_vs_WT$avg_log2FC >= 0.5 & AV_knock_vs_WT$p_val <= 0.05), ]
+# AV_knock_vs_WT_up_50 <- AV_knock_vs_WT_up[1:50, ]
+
+AV_knock_vs_WT_down <- AV_knock_vs_WT[which(AV_knock_vs_WT$avg_log2FC <= -0.5 & AV_knock_vs_WT$p_val <= 0.05), ]
+AV_knock_vs_WT_down <- AV_knock_vs_WT_down[order(AV_knock_vs_WT_down$avg_log2FC), ]
+# AV_knock_vs_WT_down_50 <- AV_knock_vs_WT_down[1:50, ]
+
+
+
+
+# GO ORA
+
+# UP
+go.ora(AV_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.ora(AV_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 50, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# GO GSEA
+
+# UP
+go.gsea(AV_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+go.gsea(AV_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 100, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG ORA
+
+# UP
+kegg.ora(AV_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.ora(AV_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 20, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+
+
+
+
+# KEGG GSEA
+
+# UP
+kegg.gsea(AV_knock_vs_WT_up, up_down= "UP", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+#DOWN
+kegg.gsea(AV_knock_vs_WT_down, up_down= "DOWN", dir = dge_path, fileName= "AV_cluster_knock_vs_WT", db= "org.Mm.eg.db", plot_height= 10, plot_width = 15, pAdjustMethod = 'none', e_height= 20, e_width = 20)
+
+
+```
+
