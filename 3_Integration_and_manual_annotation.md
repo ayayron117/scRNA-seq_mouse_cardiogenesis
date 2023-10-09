@@ -467,8 +467,14 @@ Feng_umap_2
 deSoysa_umap_2
 dev.off()
 ```
+
 <p align="center">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/d98f3cb3-6540-424b-b49d-2a2e3b17febd">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/d169da99-b51e-42ca-8fd7-664fbc937554">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a8ad1ae0-5a2e-4050-b546-c35442ccb782">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/0a1c90f7-e5dc-49fa-9ad8-ddf505b18fcc">
 </p>
+
 ``` r
 res <- c(seq(0.1,0.9,by=0.1),seq(1,3,by=0.2))
 
@@ -545,6 +551,7 @@ vln_2
 vln_3
 dev.off()
 ```
+
 <p align="center">
 </p>
 
@@ -584,8 +591,10 @@ pdf(file.path(plots_dir, "9_umap_after_removing_damaged_cells.pdf"), height = 7,
 removed_dmg_cells_umap
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 
 ``` r
 # Removal of cluster 15: This cluster appears to be hepatocytes based on
@@ -635,8 +644,10 @@ dev.off()
 
 # saveRDS(merged_s, file.path(RDS_dir, "2_seurat_after_removing_damaged_cells_and_hepatocytes.rds"))
 ```
+
 <p align="center">
 </p>
+
 
 ``` r
 outliers <- CellSelector(umap_after_reintegration)
@@ -669,8 +680,10 @@ pdf(file.path(plots_dir, "12_small_outlier_cluster.pdf"), height = 7, width = 12
 outliers_highlighted
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 
 ``` r
 # Removal of small outlier cluster: Based on the DGE markers of that cluster,
@@ -697,8 +710,10 @@ nrow(merged_s@meta.data) # 8357
 length(merged_s$orig.ident[which(merged_s$orig.ident == "WT")]) # 4564
 length(merged_s$orig.ident[which(merged_s$orig.ident == "KO")]) # 3793
 ```
+
 <p align="center">
 </p>
+
 
 ``` r
 merged_s <- integrate.and.umap(seurat = merged_s,
@@ -716,8 +731,10 @@ dev.off()
 
 # saveRDS(merged_s, file.path(RDS_dir, "3_seurat_after_removing_SMC_cells.rds"))
 ```
+
 <p align="center">
 </p>
+
 
 ``` r
 res <- c(seq(0.1,0.9,by=0.1),seq(1,3,by=0.2))
@@ -815,8 +832,10 @@ FeaturePlot(merged_s, features = "Tbx1")
 FeaturePlot(merged_s, features = "Fgf10")
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 ``` r
 # Annotation 
 myo_cells <- CellSelector(umap_after_reintegration_2)
@@ -856,6 +875,7 @@ pdf(file.path(plots_dir, "23_phase_cc_regressed.pdf"), height = 7, width = 12)
 phase_umap_cc_regressed
 dev.off()
 ```
+
 <p align="center">
 </p>
 
@@ -877,8 +897,10 @@ broad_annotation_umap_2
 condition_umap_2
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 ``` r
 merged_s <- ScaleData(merged_s, 
                       vars.to.regress = c("S.Score", "G2M.Score"),
@@ -909,8 +931,10 @@ UMAPPlot(merged_s, group.by = "broad_celltypes")
 
 # saveRDS(merged_s, file.path(RDS_dir, "4_seurat_broad_celltypes_annotated.rds"))
 ```
+
 <p align="center">
 </p>
+
 ``` r
 Idents(merged_s) <- "broad_celltypes"
 myo_s <- subset(merged_s, idents = "Myocardial")
@@ -954,8 +978,10 @@ pdf(file.path(plots_dir, "26_myo_clusters.pdf"), height = 7, width = 12)
 myo_clusters_umap
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 ``` r
 get.cons.markers(seurat = myo_s,
                  ident = "myo_clusters",
@@ -1089,8 +1115,10 @@ myo_cells_that_will_be_removed_umap
 myo_clusters_after_removal
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 ``` r
 myo_s <- integrate.and.umap(seurat = myo_s,
                             nfeat = 2000,
@@ -1143,8 +1171,10 @@ dev.off()
 
 # saveRDS(myo_s, file.path(RDS_dir, "8_myo_seurat_after_reintegration.rds"))
 ```
+
 <p align="center">
 </p>
+
 ``` r
 get.cons.markers(seurat = myo_s,
                  ident = "myo_clusters_2",
@@ -1215,8 +1245,10 @@ pdf(file.path(plots_dir, "36_mature_CM_marker.pdf"), height = 7, width = 12)
 FeaturePlot(myo_s, features = "Tnni3")
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 ``` r
 # Annotate myocardial subclusters
 myo_s <- AddMetaData(myo_s, rep(NA, nrow(myo_s@meta.data)), col.name = "myocardial_celltypes")
@@ -1253,8 +1285,10 @@ myo_condition_umap
 myo_phase_umap
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 ``` r
 get.cons.markers(seurat = myo_s,
                  ident = "myocardial_celltypes",
@@ -1327,8 +1361,10 @@ dev.off()
 
 # saveRDS(merged_s, file.path(RDS_dir, "10_final_broad_celltypes_seurat.rds"))
 ```
+
 <p align="center">
 </p>
+
 ``` r
 get.cons.markers(seurat = merged_s,
                  ident = "broad_celltypes",
@@ -1382,8 +1418,10 @@ pdf(file.path(plots_dir, "41_broad_CT_markers_heatmap.pdf"), height = 5, width =
 broad_heatmap
 dev.off()
 ```
+
 <p align="center">
 </p>
+
 ``` r
 DefaultAssay(myo_s) <- "RNA"
 myo_s <- ScaleData(myo_s, row.names(myo_s))
@@ -1423,8 +1461,10 @@ pdf(file.path(plots_dir, "43_myo_CT_markers_heatmap.pdf"), height = 5, width = 1
 myo_broad_heatmap
 dev.off() 
 ```
+
 <p align="center">
 </p>
+
 ``` r
 writeLines(capture.output(sessionInfo()),  
            file.path(getwd(), "3_sessionInfo.txt"))
