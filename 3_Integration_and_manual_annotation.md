@@ -337,6 +337,18 @@ FeaturePlot(merged_s, features = "Pf4") # Platelet
 FeaturePlot(merged_s, features = "Tubb1") # Platelet
 dev.off()
 ```
+<p align="center">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/b860e269-ee55-4c56-99cc-2977af5a85a2">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a0dbaf63-73d0-4804-beb8-e005eb9820bb">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a4d8e7d6-b0d5-4702-95ac-c82382de092b">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/c5c14bc4-47bb-4fd4-a866-27c19ab7a546">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/2e224309-274f-4e8b-b6dd-c4682b9e3167">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/393137c5-d58d-4d3c-b0a5-00dcbd8ae8cf">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a0e31047-40f4-4475-875f-386453cdb300">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/fd35ca63-2d52-4cf7-a882-cf47d9ccf831">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/6a2516ff-c68c-40d4-90f5-74866a029e14">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/11cce9dc-b58f-4570-9b31-ad6ad4541ec4">
+</p>
 
 ``` r
 # Remove blood cells
