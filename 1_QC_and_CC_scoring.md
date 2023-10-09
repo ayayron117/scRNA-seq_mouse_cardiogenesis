@@ -149,7 +149,7 @@ file.remove(c(file.path(WT_plots, "WT_unfiltered_scatter_1.pdf"),
   <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/15a01277-9ea0-411e-ac39-b8fd8ea4cd98">
   <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/71da9814-f350-4645-998d-ed3a3cd3ef73">
   <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/fb68c4af-655f-4c56-b64c-923631d83ea3">
-
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/544b8a07-80b4-4dbb-badb-e78b693081c8">
 </p>
 
 ``` r
@@ -222,6 +222,13 @@ file.remove(c(file.path(KO_plots, "KO_unfiltered_scatter_1.pdf"),
                       file.path(KO_plots, "KO_unfiltered_scatter_3.pdf"),
                       file.path(KO_plots, "KO_unfiltered_scatter_4.pdf")))
 ```
+<p align="center">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/3a70ed73-a065-48cc-8aa5-8da6a057dce1">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/e730578b-f5a9-47cb-ae42-83f295802627">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/660cd53d-b02e-4a4e-9f01-8d0dc1ba3210">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/cc4a422a-9e2e-45e4-bfdc-4c98c586dd06">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/245e9f61-68c5-4d43-ba44-46b56b98cc12">
+</p>
 
 ``` r
 ################################ WT Filtering ##################################
