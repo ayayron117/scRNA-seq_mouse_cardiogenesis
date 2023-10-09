@@ -1,11 +1,8 @@
----
-title: "Automatic Annotation Using singleR"
-author: "Aaron Mohammed"
-output: pdf_document
----
+Automatic Annotation Using singleR
+================
+Aaron Mohammed
 
-```{r setup, include=FALSE}
-
+``` r
 library(Seurat)
 library(SingleCellExperiment)
 library(SingleR)
@@ -21,11 +18,9 @@ dir.create(singleR_results_dir)
 
 seurat_output_dir <- file.path(getwd(), "singleR_annotated_seurats")
 dir.create(seurat_output_dir)
-
 ```
 
-```{r}
-
+``` r
 # Load references
 Cao.Spielmann_sce <- readRDS(file.path(ref_dir, "Cao.Spielmann_sce_E11.rds")) 
 Feng_sce <- readRDS(file.path(ref_dir, "Feng_sce_E10_E11_E12.rds")) 
@@ -68,11 +63,9 @@ KO_pred_data <- SingleR(test = KO_counts,
 saveRDS(KO_pred_data, file.path(singleR_results_dir, "KO_pred_data.rds")) 
 
 gc()
-
 ```
 
-```{r}
-
+``` r
 ############################### Add results to WT ##############################
 
 WT_s <- readRDS(file.path(seurat_input_dir, 
@@ -125,11 +118,9 @@ WT_s <- AddMetaData(WT_s, rep(NA, nrow(WT_s@meta.data)), col.name = "All_3_refs_
 "Nerve" -> WT_s@meta.data[which(WT_s$All_3_refs == "Cholinergic neurons"),"All_3_refs_renamed"]
 
 saveRDS(WT_s, file.path(seurat_output_dir, "WT_singleR_annotated.rds"))
-
 ```
 
-```{r}
-
+``` r
 ############################### Add results to KO ##############################
 
 KO_s <- readRDS(file.path(seurat_input_dir, 
@@ -183,15 +174,9 @@ KO_s <- AddMetaData(KO_s, rep(NA, nrow(KO_s@meta.data)), col.name = "All_3_refs_
 "Hepatocyte" -> KO_s@meta.data[which(KO_s$All_3_refs == "Hepatocytes"),"All_3_refs_renamed"]
 
 saveRDS(KO_s, file.path(seurat_output_dir, "KO_singleR_annotated.rds"))
-
 ```
 
-```{r}
-
+``` r
 writeLines(capture.output(sessionInfo()), 
            file.path(getwd(), "2_sessionInfo.txt"))
-
 ```
-
-
-
