@@ -144,6 +144,13 @@ file.remove(c(file.path(WT_plots, "WT_unfiltered_scatter_1.pdf"),
                       file.path(WT_plots, "WT_unfiltered_scatter_3.pdf"),
                       file.path(WT_plots, "WT_unfiltered_scatter_4.pdf")))
 ```
+<p align="center">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/c19487bb-4f94-4db2-98a3-98e20b7967c6">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/15a01277-9ea0-411e-ac39-b8fd8ea4cd98">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/71da9814-f350-4645-998d-ed3a3cd3ef73">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/fb68c4af-655f-4c56-b64c-923631d83ea3">
+
+</p>
 
 ``` r
 ################################## KO Plots ####################################
