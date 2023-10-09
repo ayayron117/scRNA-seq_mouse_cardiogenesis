@@ -267,63 +267,6 @@ range(KO_f$nCount_RNA) # min = 1020; max = 49056
 range(KO_f$nFeature_RNA) # min = 700; max = 7966
 range(KO_f$pct_mito) # min = 0%; max = 25%
 
-# Scatter plot - nFeatures vs nCounts
-pdf(file.path(KO_plots, "KO_filtered_scatter_1.pdf"), height = 8, width = 10)
-FeatureScatter(KO_f,
-               feature1 = "nCount_RNA", 
-               feature2 = "nFeature_RNA", 
-               group.by = "orig.ident") +
-  ggtitle("KO - Filtered") + 
-  theme(legend.position="none")
-dev.off()
-
-# Scatter plot - pct mito vs nCounts
-pdf(file.path(KO_plots, "KO_filtered_scatter_2.pdf"), height = 8, width = 10)
-FeatureScatter(KO_f,
-               feature1 = "nFeature_RNA", 
-               feature2 = "nCount_RNA", 
-               group.by = "orig.ident") +
-  ggtitle("KO - Filtered") + 
-  theme(legend.position="none")
-dev.off()
-
-# Scatter plot - pct mito vs nCounts
-pdf(file.path(KO_plots, "KO_filtered_scatter_3.pdf"), height = 8, width = 10)
-FeatureScatter(KO_f,
-               feature1 = "nCount_RNA", 
-               feature2 = "pct_mito", 
-               group.by = "orig.ident") +
-  ggtitle("KO - Filtered") + 
-  theme(legend.position="none")
-dev.off()
-
-# Scatter plot - pct mito vs nFeatures
-pdf(file.path(KO_plots, "KO_filtered_scatter_4.pdf"), height = 8, width = 10)
-FeatureScatter(KO_f,
-               feature1 = "nFeature_RNA", 
-               feature2 = "pct_mito", 
-               group.by = "orig.ident") +
-  ggtitle("KO - Filtered") + 
-  theme(legend.position="none")
-dev.off()
-
-# Violin plot - nCounts - nFeature_RNA - pct_mito
-pdf(file.path(KO_plots, "KO_filtered_vln_plots.pdf"), height = 6, width = 12)
-VlnPlot(KO_f, 
-        features = c("nCount_RNA","nFeature_RNA","pct_mito")) + 
-  theme(legend.position="none")
-dev.off()
-
-pdf_combine(input = c(file.path(KO_plots, "KO_filtered_scatter_1.pdf"),
-                      file.path(KO_plots, "KO_filtered_scatter_2.pdf"), 
-                      file.path(KO_plots, "KO_filtered_scatter_3.pdf"),
-                      file.path(KO_plots, "KO_filtered_scatter_4.pdf")),
-              output = file.path(KO_plots, "KO_filtered_scatter_plots.pdf"))
-
-file.remove(c(file.path(KO_plots, "KO_filtered_scatter_1.pdf"),
-                      file.path(KO_plots, "KO_filtered_scatter_2.pdf"), 
-                      file.path(KO_plots, "KO_filtered_scatter_3.pdf"),
-                      file.path(KO_plots, "KO_filtered_scatter_4.pdf")))
 ```
 
 ``` r
@@ -526,6 +469,12 @@ file.remove(c(file.path(WT_plots, "WT_filtered_scatter_1.pdf"),
                       file.path(WT_plots, "WT_filtered_scatter_3.pdf"),
                       file.path(WT_plots, "WT_filtered_scatter_4.pdf")))
 ```
+<p align="center">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/424dd031-8a6c-4e2e-bc90-7c63eff53ed3">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/1657cd84-f653-428d-bc52-53f2efd51630">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/845beaee-4fc3-401d-bf0e-8e12a603c7df">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/6e10a3fc-4255-480a-b4dd-5e801cfe07b7">
+</p>
 
 ``` r
 ########################### KO Cell Cycle Scoring ##############################
