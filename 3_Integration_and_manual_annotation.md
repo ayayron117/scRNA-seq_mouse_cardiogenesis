@@ -515,6 +515,7 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/34a28464-dd2b-4e8d-a68e-683db3eaef0e">
 </p>
 
 ``` r
@@ -553,6 +554,9 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/789ada07-0d92-4814-86a6-78b64e9f36c0">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/c9dcddb0-08a3-4c67-ad88-2aa6fdb099b0">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/b8351f18-4b3d-4380-ab17-fd80d8146ec9">
 </p>
 
 ``` r
@@ -593,6 +597,7 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/9b2d25d3-8d2d-402c-8783-0df881e03bcd">
 </p>
 
 
@@ -628,6 +633,14 @@ length(merged_s$orig.ident[which(merged_s$orig.ident == "WT")]) # 4578
 length(merged_s$orig.ident[which(merged_s$orig.ident == "KO")]) # 3793
 ```
 
+<p align="center">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/c8c5a08e-b2ea-4583-aaa8-c680317fcbe8">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/5bf9527c-0527-4aff-8750-2cbe688ef67d">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/59187ea4-93e3-4731-a22d-09880b9a646c">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a2a005cc-e948-4ea8-ac3c-8ef5aafb87a9">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/bc371cce-3411-492e-9b34-b08604ce14b6">
+</p>
+
 ``` r
 merged_s <- integrate.and.umap(seurat = merged_s,
                                nfeat = 2000,
@@ -647,7 +660,6 @@ dev.off()
 
 <p align="center">
 </p>
-
 
 ``` r
 outliers <- CellSelector(umap_after_reintegration)
