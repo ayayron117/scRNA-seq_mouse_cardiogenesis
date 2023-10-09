@@ -411,6 +411,8 @@ saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
 ``` r
 ############################## WT Filtered Plots ###############################
 
+Idents(WT_f) <- "orig.ident"
+
 # Scatter plot - nFeatures vs nCounts
 pdf(file.path(WT_plots, "WT_filtered_scatter_1.pdf"), height = 8, width = 10)
 FeatureScatter(WT_f,
@@ -474,6 +476,7 @@ file.remove(c(file.path(WT_plots, "WT_filtered_scatter_1.pdf"),
   <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/1657cd84-f653-428d-bc52-53f2efd51630">
   <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/845beaee-4fc3-401d-bf0e-8e12a603c7df">
   <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/6e10a3fc-4255-480a-b4dd-5e801cfe07b7">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/df7c88ab-3ff3-4f8c-96b7-e62fd65ea9ea">
 </p>
 
 ``` r
@@ -617,6 +620,8 @@ saveRDS(KO_f, file.path(getwd(), "KO_seurat.rds"))
 ``` r
 ############################## KO Filtered Plots ###############################
 
+Idents(KO_f) <- "orig.ident"
+
 # Scatter plot - nFeatures vs nCounts
 pdf(file.path(KO_plots, "KO_filtered_scatter_1.pdf"), height = 8, width = 10)
 FeatureScatter(KO_f,
@@ -675,6 +680,13 @@ file.remove(c(file.path(KO_plots, "KO_filtered_scatter_1.pdf"),
                       file.path(KO_plots, "KO_filtered_scatter_3.pdf"),
                       file.path(KO_plots, "KO_filtered_scatter_4.pdf")))
 ```
+<p align="center">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/18ca0275-e59a-4951-8a21-968e4331bf61">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/eedc2484-189a-48c2-a71d-c19974122c47">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/332148fe-84d8-4eff-99b5-14213bcae3fe">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/7ea3d93a-0d5a-44b9-8cb8-9b4e45cf28cf">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/aea60445-599c-46bb-937b-ed2d12b39b65">
+</p>
 
 ``` r
 writeLines(capture.output(sessionInfo()),  
