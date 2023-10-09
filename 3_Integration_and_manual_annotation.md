@@ -312,6 +312,12 @@ CS_umap
 Feng_umap
 deSoysa_umap
 ```
+<p align="center">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/e152044f-f8c5-492c-bd28-de643d554ee8">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a3c4a614-f17f-46bc-806d-dcb8e739634e">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/76e2ac8b-659d-4e91-9461-319f04160965">
+  <img width="800" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/5edd749d-dfc8-49a8-934c-00fb1fa7f175">
+</p>
 
 ``` r
 DefaultAssay(merged_s) <- "RNA"
