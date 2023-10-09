@@ -659,6 +659,7 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/2d12abc1-e003-4240-898f-b502b65fc069">
 </p>
 
 ``` r
@@ -694,8 +695,8 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/38ab621b-c68b-48ac-b109-5fe0265ccaea">
 </p>
-
 
 ``` r
 # Removal of small outlier cluster: Based on the DGE markers of that cluster,
@@ -724,6 +725,10 @@ length(merged_s$orig.ident[which(merged_s$orig.ident == "KO")]) # 3793
 ```
 
 <p align="center">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/d1c3d38f-a772-49b3-a25f-f62ac7ced0ef">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/4b2561b3-9a1f-4825-9760-50355a593302">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/b452691c-ee9a-4133-a575-db0e6e6e8e33">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/ce98b1ec-0542-484b-85cf-000e24b30d0b">
 </p>
 
 
@@ -745,6 +750,7 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/cb5a5594-0595-4c43-857e-7cd6e599733f">
 </p>
 
 
