@@ -851,9 +851,6 @@ FeaturePlot(merged_s, features = "Fgf10")
 dev.off()
 ```
 
-<p align="center">
-</p>
-
 ``` r
 # Annotation 
 myo_cells <- CellSelector(umap_after_reintegration_2)
@@ -895,6 +892,9 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/f4c7a2a7-f1cf-4d28-8ceb-76af9b20e6ab">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/73135d40-cf8f-4fba-9188-7b0544d2c8c0">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a94b4ee7-4ff7-4ab1-be95-2e44602255d1">
 </p>
 
 ``` r
@@ -917,6 +917,9 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/5e69aa89-3e34-46df-acf3-1ffcf9ba77a9">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/c7006a6d-33f5-491e-ae0d-36835f1e5f2f">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/51ad9dbe-25f0-4eba-a03d-90645025975b">
 </p>
 
 ``` r
@@ -949,9 +952,6 @@ UMAPPlot(merged_s, group.by = "broad_celltypes")
 
 # saveRDS(merged_s, file.path(RDS_dir, "4_seurat_broad_celltypes_annotated.rds"))
 ```
-
-<p align="center">
-</p>
 
 ``` r
 Idents(merged_s) <- "broad_celltypes"
@@ -998,6 +998,7 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/2b22a9fb-1971-4d57-9b1a-473882e978fd">
 </p>
 
 ``` r
@@ -1135,6 +1136,15 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/b4883a02-81ad-45aa-b968-1b766b9da32f">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/49ec154a-93fb-4dcb-9d1b-9173e1a5414f">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/6e2f2c4f-1d34-46a5-b330-b9b7f45e0c8c">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/4b221241-76a3-4690-860a-c8adc99daa43">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/29858c0d-a773-445c-ab0f-f95fbab6ab28">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/64662d37-2df2-435c-986d-cf0cf05e9977">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a3b24385-a15f-46ed-bb34-c551b9b0cf5c">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/94bc58da-1a1c-4421-9e8f-5d0c3f668b4e">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/8cd6a873-f520-4eda-81af-0668859124cf">
 </p>
 
 ``` r
