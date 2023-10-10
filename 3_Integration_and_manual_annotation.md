@@ -1201,6 +1201,7 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/6e612929-b337-48be-9f42-bcbdc2a2fb2f">
 </p>
 
 ``` r
@@ -1274,9 +1275,6 @@ FeaturePlot(myo_s, features = "Tnni3")
 dev.off()
 ```
 
-<p align="center">
-</p>
-
 ``` r
 # Annotate myocardial subclusters
 myo_s <- AddMetaData(myo_s, rep(NA, nrow(myo_s@meta.data)), col.name = "myocardial_celltypes")
@@ -1315,6 +1313,9 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/4177a1d8-529e-4707-a26e-bf62f41e3e07">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/2e9d3754-15ad-41f0-8145-b9e41d6a53d6">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/f547a6fe-be45-4f04-af4f-3e143b6e99de">
 </p>
 
 ``` r
