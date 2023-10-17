@@ -1392,6 +1392,8 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/a2931b43-2dc0-4b38-ac4d-c6916fa3ad6b">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/ddb17d7b-0701-4e7f-a2dd-76650779f120">
 </p>
 
 ``` r
@@ -1449,6 +1451,8 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/83bea2f4-b378-407f-ad49-a5710c9ed0db">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/b0bd80e0-36e2-40a0-9d63-9dc868fd91e1">
 </p>
 
 ``` r
@@ -1492,6 +1496,8 @@ dev.off()
 ```
 
 <p align="center">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/4f5b58d3-eb99-4c6e-a1d6-a03fe89a78ca">
+  <img width="1000" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/1805b36b-d2e3-457a-9d92-b3e5a9efe6f6">
 </p>
 
 ``` r
