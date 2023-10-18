@@ -1,4 +1,4 @@
-DGE Analysis
+DGE & GSE Analyses
 ================
 Aaron Mohammed
 
