@@ -292,6 +292,20 @@ dev.off()
 ```
 
 ``` r
+out.extra="page=2"
+knitr::include_graphics(path = "/Users/asm/Documents/ayayron117_portfolio/scRNA-seq_mouse_cardiogenesis/1_QC_and_CC_scoring/WT_QC/WT_Plots/0_WT_unfiltered_scatter_plots.pdf")
+```
+
+<div class="figure">
+
+<embed src="WT_QC/WT_Plots/0_WT_unfiltered_scatter_plots.pdf" title="caption" width="85%" page=2 type="application/pdf" />
+<p class="caption">
+caption
+</p>
+
+</div>
+
+``` r
 get.all.markers <- function (seurat, ident, path, fname) {
   
   DefaultAssay(seurat) <- "RNA"
