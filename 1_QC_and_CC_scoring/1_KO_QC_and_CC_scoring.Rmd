@@ -1,10 +1,10 @@
 ---
-title: "WT Quality Control and Cell Cycle Scoring"
+title: "KO Quality Control and Cell Cycle Scoring"
 author: "Aaron Mohammed"
 output: github_document
 ---
 
-```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(eval = FALSE)
 
@@ -22,27 +22,27 @@ library(openxlsx)
 
 proj_path <- dirname(getwd())
 
-WT_dir <- file.path(getwd(), "WT_QC")
-dir.create(WT_dir)
+KO_dir <- file.path(getwd(), "KO_QC")
+dir.create(KO_dir)
 
-WT_plots <- file.path(WT_dir, "WT_Plots")
-dir.create(WT_plots)
+KO_plots <- file.path(KO_dir, "KO_Plots")
+dir.create(KO_plots)
 
-WT_rds <- file.path(WT_dir, "WT_RDS_Files")
-dir.create(WT_rds)
+KO_rds <- file.path(KO_dir, "KO_RDS_Files")
+dir.create(KO_rds)
 
-WT_markers <- file.path(WT_dir, "WT_Markers")
-dir.create(WT_markers)
+KO_markers <- file.path(KO_dir, "KO_Markers")
+dir.create(KO_markers)
 
 ```
 
-## Create WT Seurat Object
+## Create KO Seurat Object
 
 ```{r}
 
 # Import count matrix for the wildtype 
-WT_mat <- Read10X(file.path(proj_path, 
-                            "WT",
+KO_mat <- Read10X(file.path(proj_path, 
+                            "KO",
                             "outs",
                             "filtered_feature_bc_matrix"),  
                   gene.column = 2,  
@@ -51,165 +51,164 @@ WT_mat <- Read10X(file.path(proj_path,
                   strip.suffix = FALSE)
 
 # Create seurat object for the wildtype
-WT_s <- CreateSeuratObject(WT_mat, 
-                           project = "WT")
+KO_s <- CreateSeuratObject(KO_mat, 
+                           project = "KO")
 
 # Calculate percentages of mitochondrial and ribosomal genes
-WT_s <- PercentageFeatureSet(WT_s, 
+KO_s <- PercentageFeatureSet(KO_s, 
                              "^mt-", 
                              col.name = "pct_mito")
-WT_s <- PercentageFeatureSet(WT_s, 
+KO_s <- PercentageFeatureSet(KO_s, 
                              "^Rp[sl]\\d+", 
                              col.name = "pct_ribo")
 
 # Normalize 
-WT_s <- NormalizeData(WT_s)
+KO_s <- NormalizeData(KO_s)
 
 # Number of cells
-nrow(WT_s@meta.data) # 15953
+nrow(KO_s@meta.data) # 8666
 
 ```
 
-## WT DropletQC
+## KO DropletQC
 
 ```{r}
 
-WT_nf <- nuclear_fraction_tags(outs = file.path(proj_path,
-                                                "WT",
+KO_nf <- nuclear_fraction_tags(outs = file.path(proj_path,
+                                                "KO",
                                                 "outs"),
                                tiles = 1, cores = 9, verbose = FALSE)
 
-saveRDS(WT_nf, file.path(WT_rds, "0_WT_nuclear_fraction.rds"))
+saveRDS(KO_nf, file.path(KO_rds, "0_KO_nuclear_fraction.rds"))
 
-identical(row.names(WT_s@meta.data), row.names(WT_nf)) # True
+identical(row.names(KO_s@meta.data), row.names(KO_nf)) # True
 
-WT_s <- AddMetaData(WT_s, WT_nf$nuclear_fraction, col.name = "nuclear_fraction")
+KO_s <- AddMetaData(KO_s, KO_nf$nuclear_fraction, col.name = "nuclear_fraction")
 
 ################################################################################
 
-WT_s.nf.umi <- data.frame(nf=WT_s$nuclear_fraction,
-                         umi=WT_s$nCount_RNA)
+KO_s.nf.umi <- data.frame(nf=KO_s$nuclear_fraction,
+                         umi=KO_s$nCount_RNA)
 
 # Identify empty droplets
-WT_s.ed <- identify_empty_drops(nf_umi=WT_s.nf.umi)
+KO_s.ed <- identify_empty_drops(nf_umi=KO_s.nf.umi)
 
 ################################################################################
 
-WT_s <- FindVariableFeatures(WT_s, 
+KO_s <- FindVariableFeatures(KO_s, 
                              selection.method = "vst", 
                              nfeatures = 2000)
-WT_s <- ScaleData(WT_s)
-WT_s <- RunPCA(WT_s)
+KO_s <- ScaleData(KO_s)
+KO_s <- RunPCA(KO_s)
 
 # Determine number of dimensions that capture at least 80% of the variation
-pct <- WT_s[["pca"]]@stdev / sum(WT_s[["pca"]]@stdev) * 100
+pct <- KO_s[["pca"]]@stdev / sum(KO_s[["pca"]]@stdev) * 100
 cumu <- cumsum(pct)
 PC_80_pct <- which(cumu >= 80)[1]
-PC_80_pct #32
+PC_80_pct #31
 
 # UMAP and clustering
-WT_s <- FindNeighbors(WT_s, 
+KO_s <- FindNeighbors(KO_s, 
                       dims = 1:PC_80_pct)
-WT_s <- RunUMAP(WT_s, 
+KO_s <- RunUMAP(KO_s, 
                 dims=1:PC_80_pct)
 
-WT_s <- FindClusters(WT_s, 
+KO_s <- FindClusters(KO_s, 
                      resolution = 0.6)
 
-WT_s <- AddMetaData(WT_s, WT_s$seurat_clusters, col.name = "WT_SC_1")
+KO_s <- AddMetaData(KO_s, KO_s$seurat_clusters, col.name = "KO_SC_1")
 
 ################################################################################
 
-WT_s.ed$cell_type <- WT_s$WT_SC_1
+KO_s.ed$cell_type <- KO_s$KO_SC_1
 
 # Identify damaged cells
-WT_s.ed.dc <- identify_damaged_cells(WT_s.ed, verbose = FALSE, output_plots = FALSE)
+KO_s.ed.dc <- identify_damaged_cells(KO_s.ed, verbose = FALSE, output_plots = FALSE)
 
-WT_s <- AddMetaData(WT_s, WT_s.ed.dc$df$cell_status, col.name = "DropletQC")
+KO_s <- AddMetaData(KO_s, KO_s.ed.dc$df$cell_status, col.name = "DropletQC")
 
 # Save the seurat object
-saveRDS(WT_s, file.path(WT_rds, "0_WT_seurat.rds"))
+saveRDS(KO_s, file.path(KO_rds, "0_KO_seurat.rds"))
 
 ```
 
-## Unfiltered WT Plots
+## Unfiltered KO Plots
 
 ```{r}
 
 # Ranges of counts, expressed genes, and percent mitochondria gene expression
-range(WT_s$nCount_RNA) # min = 500; max = 101497
-range(WT_s$nFeature_RNA) # min = 36; max = 10055
-range(WT_s$pct_mito) # min = 0.04%; max = 96.42%
-range(WT_s$pct_ribo) # min = 0.11%; max = 70.49%
+range(KO_s$nCount_RNA) # min = 500; max = 94972
+range(KO_s$nFeature_RNA) # min = 60; max = 9927
+range(KO_s$pct_mito) # min = 0%; max = 97.5%
+range(KO_s$pct_ribo) # min = 0.35%; max = 54.27%
 
-
-pdf(file.path(WT_plots, "0_WT_unfiltered_scatter_plots.pdf"), height = 8, width = 12)
-FeatureScatter(WT_s,
+pdf(file.path(KO_plots, "0_KO_unfiltered_scatter_plots.pdf"), height = 8, width = 12)
+FeatureScatter(KO_s,
                feature1 = "nCount_RNA", 
                feature2 = "nFeature_RNA", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nCount_RNA", 
                feature2 = "pct_mito", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nCount_RNA", 
                feature2 = "pct_ribo", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nFeature_RNA", 
                feature2 = "nCount_RNA", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nFeature_RNA", 
                feature2 = "pct_mito", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nFeature_RNA", 
                feature2 = "pct_ribo", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nuclear_fraction", 
                feature2 = "nCount_RNA", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nuclear_fraction", 
                feature2 = "nFeature_RNA", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nuclear_fraction", 
                feature2 = "pct_mito", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_s,
+FeatureScatter(KO_s,
                feature1 = "nuclear_fraction", 
                feature2 = "pct_ribo", 
                group.by = "DropletQC") +
-  ggtitle("WT - Unfiltered")
+  ggtitle("KO - Unfiltered")
 dev.off()
 
 ```
 
-```{r, WT-unfilt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-unfilt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots"
+plot_paths <- "KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -220,95 +219,95 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # Violin plots
-pdf(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"), height = 6, width = 8)
-VlnPlot(WT_s, 
+pdf(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"), height = 6, width = 8)
+VlnPlot(KO_s, 
         features = "nCount_RNA", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # 
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "nFeature_RNA", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # 
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "pct_mito", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # 
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "pct_ribo", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
 dev.off()
 
 # Violin plots grouped by DoubletQC classifications
-pdf(file.path(WT_plots, "WT_unfiltered_vln_plots_2.pdf"), height = 6, width = 12)
-VlnPlot(WT_s, 
+pdf(file.path(KO_plots, "KO_unfiltered_vln_plots_2.pdf"), height = 6, width = 12)
+VlnPlot(KO_s, 
         features = "nCount_RNA", 
         group.by = "DropletQC") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "nFeature_RNA", 
         group.by = "DropletQC") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "pct_mito", 
         group.by = "DropletQC") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "pct_ribo", 
         group.by = "DropletQC") + 
   theme(legend.position="none")
 dev.off()
 
 
-pdf(file.path(WT_plots, "WT_unfiltered_vln_plots_3.pdf"), height = 8, width = 15)
-VlnPlot(WT_s, 
+pdf(file.path(KO_plots, "KO_unfiltered_vln_plots_3.pdf"), height = 8, width = 15)
+VlnPlot(KO_s, 
         features = "nCount_RNA", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # #
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "nFeature_RNA", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # #
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "pct_mito", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # #
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "pct_ribo", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # #
-VlnPlot(WT_s, 
+VlnPlot(KO_s, 
         features = "nuclear_fraction", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 dev.off()
 
 
 # Combine violin plot pdfs
-pdf_combine(input = c(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"),
-                      file.path(WT_plots, "WT_unfiltered_vln_plots_2.pdf"),
-                      file.path(WT_plots, "WT_unfiltered_vln_plots_3.pdf")),
-              output = file.path(WT_plots, "0_WT_unfiltered_vln_plots.pdf"))
+pdf_combine(input = c(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"),
+                      file.path(KO_plots, "KO_unfiltered_vln_plots_2.pdf"),
+                      file.path(KO_plots, "KO_unfiltered_vln_plots_3.pdf")),
+              output = file.path(KO_plots, "0_KO_unfiltered_vln_plots.pdf"))
 
-file.remove(c(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"),
-              file.path(WT_plots, "WT_unfiltered_vln_plots_2.pdf"),
-              file.path(WT_plots, "WT_unfiltered_vln_plots_3.pdf")))
+file.remove(c(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"),
+              file.path(KO_plots, "KO_unfiltered_vln_plots_2.pdf"),
+              file.path(KO_plots, "KO_unfiltered_vln_plots_3.pdf")))
 
 ```
 
-```{r, WT-unfilt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-unfilt-vln, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots"
+plot_paths <- "KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -319,21 +318,21 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # UMAP plots
-pdf(file.path(WT_plots, "0_WT_unfiltered_UMAPs.pdf"), height = 7, width = 12)
-UMAPPlot(WT_s, group.by = "WT_SC_1", label =TRUE) + ggtitle("WT Unfiltered | Clusters")
-UMAPPlot(WT_s, group.by = "DropletQC") + ggtitle("WT Unfiltered | DropletQC Classifications")
-FeaturePlot(WT_s, features = "nCount_RNA") + ggtitle("WT Unfiltered | # of Counts")
-FeaturePlot(WT_s, features = "nFeature_RNA") + ggtitle("WT Unfiltered | # of Genes")
-FeaturePlot(WT_s, features = "pct_mito") + ggtitle("WT Unfiltered | % of Mito Genes")
-FeaturePlot(WT_s, features = "pct_ribo") + ggtitle("WT Unfiltered | % of Ribo Genes")
-FeaturePlot(WT_s, features = "nuclear_fraction") + ggtitle("WT Unfiltered | Nuclear Fraction")
+pdf(file.path(KO_plots, "0_KO_unfiltered_UMAPs.pdf"), height = 7, width = 12)
+UMAPPlot(KO_s, group.by = "KO_SC_1", label =TRUE) + ggtitle("KO Unfiltered | Clusters")
+UMAPPlot(KO_s, group.by = "DropletQC") + ggtitle("KO Unfiltered | DropletQC Classifications")
+FeaturePlot(KO_s, features = "nCount_RNA") + ggtitle("KO Unfiltered | # of Counts")
+FeaturePlot(KO_s, features = "nFeature_RNA") + ggtitle("KO Unfiltered | # of Genes")
+FeaturePlot(KO_s, features = "pct_mito") + ggtitle("KO Unfiltered | % of Mito Genes")
+FeaturePlot(KO_s, features = "pct_ribo") + ggtitle("KO Unfiltered | % of Ribo Genes")
+FeaturePlot(KO_s, features = "nuclear_fraction") + ggtitle("KO Unfiltered | Nuclear Fraction")
 dev.off()
 
 ```
 
-```{r, WT-unfilt-umap, echo = FALSE, message=FALSE, fig.align='center', eval=TRUE}
+```{r, KO-unfilt-umap, echo = FALSE, message=FALSE, fig.align='center', eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs"
+plot_paths <- "KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -380,111 +379,111 @@ get.all.markers <- function (seurat, ident, path, fname) {
 
 ```{r}
 
-all_markers <- get.all.markers(seurat = WT_s,
+all_markers <- get.all.markers(seurat = KO_s,
                                ident = "seurat_clusters",
-                               path = WT_markers,
-                               fname = "0_WT_cluster_markers.xlsx")
+                               path = KO_markers,
+                               fname = "0_KO_cluster_markers.xlsx")
 
 ```
 
-## WT Low-quality Filtering
+## KO Low-quality Filtering
 
 ```{r}
 
-WT_f <- subset(WT_s, 
+KO_f <- subset(KO_s, 
                subset = nFeature_RNA <= 8000 &
                  nFeature_RNA >= 1500 & 
                  nCount_RNA >= 1000 &
                  nCount_RNA <= 40000 &
                  pct_mito <= 25)
 
-Idents(WT_f) <- "DropletQC"
-WT_f <- subset(WT_f, idents = "cell")
+Idents(KO_f) <- "DropletQC"
+KO_f <- subset(KO_f, idents = "cell")
 
 # Number of cells
-nrow(WT_f@meta.data) # 5524
+nrow(KO_f@meta.data) # 5309
 
 ```
 
-## WT Doublet Classifications
+## KO Doublet Classifications
 
 ```{r}
 
-WT_f <- FindVariableFeatures(WT_f, 
+KO_f <- FindVariableFeatures(KO_f, 
                              selection.method = "vst", 
                              nfeatures = 2000)
-WT_f <- ScaleData(WT_f)
-WT_f <- RunPCA(WT_f)
+KO_f <- ScaleData(KO_f)
+KO_f <- RunPCA(KO_f)
 
 # Determine number of dimensions that capture at least 80% of the variation
-pct <- WT_f[["pca"]]@stdev / sum(WT_f[["pca"]]@stdev) * 100
+pct <- KO_f[["pca"]]@stdev / sum(KO_f[["pca"]]@stdev) * 100
 cumu <- cumsum(pct)
 PC_80_pct <- which(cumu >= 80)[1]
-PC_80_pct #33
+PC_80_pct #31
 
 # UMAP and clustering
-WT_f <- FindNeighbors(WT_f, 
+KO_f <- FindNeighbors(KO_f, 
                       dims = 1:PC_80_pct)
-WT_f <- RunUMAP(WT_f, 
+KO_f <- RunUMAP(KO_f, 
                 dims=1:PC_80_pct)
 
-WT_f <- FindClusters(WT_f, 
+KO_f <- FindClusters(KO_f, 
                      resolution = 0.6)
 
-WT_f <- AddMetaData(WT_f, WT_f$seurat_clusters, col.name = "WT_SC_2")
+KO_f <- AddMetaData(KO_f, KO_f$seurat_clusters, col.name = "KO_SC_2")
 
 ################################################################################
 
 # Doublet detection using scDblFinder
-WT_sce <- as.SingleCellExperiment(WT_f, 
+KO_sce <- as.SingleCellExperiment(KO_f, 
                                    assay = "RNA")
 
 set.seed(123)
 
-WT_sce <- scDblFinder(WT_sce, 
-                      clusters="WT_SC_2")
+KO_sce <- scDblFinder(KO_sce, 
+                      clusters="KO_SC_2")
 
-identical(WT_sce@colData@rownames, row.names(WT_f@meta.data)) # TRUE
-identical(WT_sce$WT_SC_2, WT_f@meta.data[,"WT_SC_2"]) # TRUE
+identical(KO_sce@colData@rownames, row.names(KO_f@meta.data)) # TRUE
+identical(KO_sce$KO_SC_2, KO_f@meta.data[,"KO_SC_2"]) # TRUE
 
-WT_f <- AddMetaData(WT_f, WT_sce$scDblFinder.class, col.name = "scDblFinder.class")
-WT_f <- AddMetaData(WT_f, WT_sce$scDblFinder.score, col.name = "scDblFinder.score")
+KO_f <- AddMetaData(KO_f, KO_sce$scDblFinder.class, col.name = "scDblFinder.class")
+KO_f <- AddMetaData(KO_f, KO_sce$scDblFinder.score, col.name = "scDblFinder.score")
 
-saveRDS(WT_f, file.path(WT_rds, "1_WT_seurat.rds"))
+saveRDS(KO_f, file.path(KO_rds, "1_KO_seurat.rds"))
 
 ```
 
-## WT Plots with scDblFinder Classifications 
+## KO Plots w/ scDblFinder Classifications
 
 ```{r}
 
-pdf(file.path(WT_plots, "1_WT_doublet_scatter_plots.pdf"), height = 8, width = 12)
-FeatureScatter(WT_f,
+pdf(file.path(KO_plots, "1_KO_doublet_scatter_plots.pdf"), height = 8, width = 12)
+FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
                feature2 = "nFeature_RNA", 
                group.by = "scDblFinder.class")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
                feature2 = "pct_mito", 
                group.by = "scDblFinder.class")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
                feature2 = "pct_ribo", 
                group.by = "scDblFinder.class")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nFeature_RNA", 
                feature2 = "nCount_RNA", 
                group.by = "scDblFinder.class")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nFeature_RNA", 
                feature2 = "pct_mito", 
                group.by = "scDblFinder.class")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nFeature_RNA", 
                feature2 = "pct_ribo", 
                group.by = "scDblFinder.class")
@@ -492,9 +491,9 @@ dev.off()
 
 ```
 
-```{r, WT-dbl-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-scatter, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_scatter_plots"
+plot_paths <- "KO_QC/KO_QC_images/1_KO_doublet_scatter_plots"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -505,23 +504,23 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # Violin plots grouped by scDblFinder classifications
-pdf(file.path(WT_plots, "1_WT_doublet_vln_plots.pdf"), height = 6, width = 12)
-VlnPlot(WT_f, 
+pdf(file.path(KO_plots, "1_KO_doublet_vln_plots.pdf"), height = 6, width = 12)
+VlnPlot(KO_f, 
         features = "nCount_RNA", 
         group.by = "scDblFinder.class") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "nFeature_RNA", 
         group.by = "scDblFinder.class") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_mito", 
         group.by = "scDblFinder.class") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_ribo", 
         group.by = "scDblFinder.class") + 
   theme(legend.position="none")
@@ -529,9 +528,9 @@ dev.off()
 
 ```
 
-```{r, WT-dbl-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-vln, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_vln_plots"
+plot_paths <- "KO_QC/KO_QC_images/1_KO_doublet_vln_plots"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -542,33 +541,33 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # Violin plots grouped by scDblFinder clusters
-pdf(file.path(WT_plots, "1_WT_vln_scdblfinder_clusters.pdf"), height = 6, width = 12)
-VlnPlot(WT_f, 
+pdf(file.path(KO_plots, "1_KO_vln_scdblfinder_clusters.pdf"), height = 6, width = 12)
+VlnPlot(KO_f, 
         features = "nCount_RNA", 
-        group.by = "WT_SC_2") + 
+        group.by = "KO_SC_2") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "nFeature_RNA", 
-        group.by = "WT_SC_2") + 
+        group.by = "KO_SC_2") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_mito", 
-        group.by = "WT_SC_2") + 
+        group.by = "KO_SC_2") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_ribo", 
-        group.by = "WT_SC_2") + 
+        group.by = "KO_SC_2") + 
   theme(legend.position="none")
 dev.off()
 
 ```
 
-```{r, WT-dbl-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters"
+plot_paths <- "KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -579,33 +578,33 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # Violin plots grouped by original clusters
-pdf(file.path(WT_plots, "1_WT_vln_original_clusters.pdf"), height = 6, width = 12)
-VlnPlot(WT_f, 
+pdf(file.path(KO_plots, "1_KO_vln_original_clusters.pdf"), height = 6, width = 12)
+VlnPlot(KO_f, 
         features = "nCount_RNA", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "nFeature_RNA", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_mito", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_ribo", 
-        group.by = "WT_SC_1") + 
+        group.by = "KO_SC_1") + 
   theme(legend.position="none")
 dev.off()
 
 ```
 
-```{r, WT-orig-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-orig-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/1_WT_vln_original_clusters"
+plot_paths <- "KO_QC/KO_QC_images/1_KO_vln_original_clusters"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -616,21 +615,21 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # UMAP plots
-pdf(file.path(WT_plots, "1_WT_doublet_UMAPs.pdf"), height = 7, width = 12)
-UMAPPlot(WT_f, group.by = "WT_SC_2", label =TRUE) + ggtitle("WT Doublets | Clusters")
-UMAPPlot(WT_f, group.by = "scDblFinder.class") + ggtitle("WT Doublets | DropletQC Classifications")
-FeaturePlot(WT_f, features = "nCount_RNA") + ggtitle("WT Doublets | # of Counts")
-FeaturePlot(WT_f, features = "nFeature_RNA") + ggtitle("WT Doublets | # of Genes")
-FeaturePlot(WT_f, features = "pct_mito") + ggtitle("WT Doublets | % of Mito Genes")
-FeaturePlot(WT_f, features = "pct_ribo") + ggtitle("WT Doublets | % of Ribo Genes")
-FeaturePlot(WT_f, features = "scDblFinder.score") + ggtitle("WT Doublets | scDblFinder Score")
+pdf(file.path(KO_plots, "1_KO_doublet_UMAPs.pdf"), height = 7, width = 12)
+UMAPPlot(KO_f, group.by = "KO_SC_2", label =TRUE) + ggtitle("KO Doublets | Clusters")
+UMAPPlot(KO_f, group.by = "scDblFinder.class") + ggtitle("KO Doublets | DropletQC Classifications")
+FeaturePlot(KO_f, features = "nCount_RNA") + ggtitle("KO Doublets | # of Counts")
+FeaturePlot(KO_f, features = "nFeature_RNA") + ggtitle("KO Doublets | # of Genes")
+FeaturePlot(KO_f, features = "pct_mito") + ggtitle("KO Doublets | % of Mito Genes")
+FeaturePlot(KO_f, features = "pct_ribo") + ggtitle("KO Doublets | % of Ribo Genes")
+FeaturePlot(KO_f, features = "scDblFinder.score") + ggtitle("KO Doublets | scDblFinder Score")
 dev.off()
 
 ```
 
-```{r, WT-dbl-umap, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-umap, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_UMAPs"
+plot_paths <- "KO_QC/KO_QC_images/1_KO_doublet_UMAPs"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -638,16 +637,16 @@ knitr::include_graphics(plot_paths)
 
 ```
 
-## WT Doublet Removal
+## KO Doublet Removal
 
 ```{r}
 
 # Filter out the cells classified as doublets
-Idents(WT_f) <- "scDblFinder.class"
-WT_f <- subset(WT_f, idents = "singlet")
+Idents(KO_f) <- "scDblFinder.class"
+KO_f <- subset(KO_f, idents = "singlet")
 
 # Number of cells
-nrow(WT_f@meta.data) # 5055
+nrow(KO_f@meta.data) # 4988
 
 ```
 
@@ -655,34 +654,34 @@ nrow(WT_f@meta.data) # 5055
 
 ```{r}
 
-WT_f <- FindVariableFeatures(WT_f, 
+KO_f <- FindVariableFeatures(KO_f, 
                              selection.method = "vst", 
                              nfeatures = 2000)
-WT_f <- ScaleData(WT_f)
-WT_f <- RunPCA(WT_f)
+KO_f <- ScaleData(KO_f)
+KO_f <- RunPCA(KO_f)
 
 # Determine number of dimensions that capture at least 80% of the variation
-pct <- WT_f[["pca"]]@stdev / sum(WT_f[["pca"]]@stdev) * 100
+pct <- KO_f[["pca"]]@stdev / sum(KO_f[["pca"]]@stdev) * 100
 cumu <- cumsum(pct)
 PC_80_pct <- which(cumu >= 80)[1]
-PC_80_pct #33
+PC_80_pct #31
 
 # UMAP and clustering
-WT_f <- FindNeighbors(WT_f, 
+KO_f <- FindNeighbors(KO_f, 
                       dims = 1:PC_80_pct)
-WT_f <- RunUMAP(WT_f, 
+KO_f <- RunUMAP(KO_f, 
                 dims=1:PC_80_pct)
 
-WT_f <- FindClusters(WT_f, 
+KO_f <- FindClusters(KO_f, 
                      resolution = 0.6)
 
-WT_f <- AddMetaData(WT_f, WT_f$seurat_clusters, col.name = "WT_SC_3")
+KO_f <- AddMetaData(KO_f, KO_f$seurat_clusters, col.name = "KO_SC_3")
 
-saveRDS(WT_f, file.path(WT_rds, "2_WT_seurat.rds"))
+saveRDS(KO_f, file.path(KO_rds, "2_KO_seurat.rds"))
 
 ```
 
-## WT Cell Cycle Scoring
+## KO Cell Cycle Scoring
 
 ```{r}
 
@@ -700,46 +699,46 @@ g2m.genes <- c("Hmgb2","Cdk1","Nusap1","Ube2c","Birc5","Tpx2","Top2a","Ndc80",
                "Ect2","Kif23","Hmmr","Aurka","Psrc1","Anln","Lbr","Ckap5",
                "Cenpe","Ctcf","Nek2","G2e3","Gas2l3","Cbx5","Cenpa")
 
-WT_f <- CellCycleScoring(WT_f,
+KO_f <- CellCycleScoring(KO_f,
                          s.features = s.genes,
                          g2m.features = g2m.genes,
                          set.ident = FALSE)
 
-saveRDS(WT_f, file.path(WT_rds, "3_WT_seurat.rds"))
+saveRDS(KO_f, file.path(KO_rds, "3_KO_seurat.rds"))
 
 ```
 
-## WT Filtered Plots
+## KO Filtered Plots
 
 ```{r}
 
-pdf(file.path(WT_plots, "2_WT_scatter_plots.pdf"), height = 8, width = 12)
-FeatureScatter(WT_f,
+pdf(file.path(KO_plots, "2_KO_scatter_plots.pdf"), height = 8, width = 12)
+FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
                feature2 = "nFeature_RNA", 
                group.by = "orig.ident")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
                feature2 = "pct_mito", 
                group.by = "orig.ident")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
                feature2 = "pct_ribo", 
                group.by = "orig.ident")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nFeature_RNA", 
                feature2 = "nCount_RNA", 
                group.by = "orig.ident")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nFeature_RNA", 
                feature2 = "pct_mito", 
                group.by = "orig.ident")
 # # # # # # # # # # # # # # # # # # # # # # # #
-FeatureScatter(WT_f,
+FeatureScatter(KO_f,
                feature1 = "nFeature_RNA", 
                feature2 = "pct_ribo", 
                group.by = "orig.ident")
@@ -747,9 +746,9 @@ dev.off()
 
 ```
 
-```{r, WT-filt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/2_WT_scatter_plots"
+plot_paths <- "KO_QC/KO_QC_images/2_KO_scatter_plots"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -760,23 +759,23 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # Violin plots grouped by scDblFinder classifications
-pdf(file.path(WT_plots, "2_WT_vln_plots.pdf"), height = 6, width = 12)
-VlnPlot(WT_f, 
+pdf(file.path(KO_plots, "2_KO_vln_plots.pdf"), height = 6, width = 12)
+VlnPlot(KO_f, 
         features = "nCount_RNA", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "nFeature_RNA", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_mito", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_ribo", 
         group.by = "orig.ident") + 
   theme(legend.position="none")
@@ -784,9 +783,9 @@ dev.off()
 
 ```
 
-```{r, WT-filt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-vln, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/2_WT_vln_plots"
+plot_paths <- "KO_QC/KO_QC_images/2_KO_vln_plots"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -797,33 +796,33 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # Violin plots grouped by final clusters
-pdf(file.path(WT_plots, "2_WT_vln_final_clusters.pdf"), height = 6, width = 12)
-VlnPlot(WT_f, 
+pdf(file.path(KO_plots, "2_KO_vln_final_clusters.pdf"), height = 6, width = 12)
+VlnPlot(KO_f, 
         features = "nCount_RNA", 
-        group.by = "WT_SC_3") + 
+        group.by = "KO_SC_3") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "nFeature_RNA", 
-        group.by = "WT_SC_3") + 
+        group.by = "KO_SC_3") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_mito", 
-        group.by = "WT_SC_3") + 
+        group.by = "KO_SC_3") + 
   theme(legend.position="none")
 # # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
+VlnPlot(KO_f, 
         features = "pct_ribo", 
-        group.by = "WT_SC_3") + 
+        group.by = "KO_SC_3") + 
   theme(legend.position="none")
 dev.off()
 
 ```
 
-```{r, WT-filt-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/2_WT_vln_final_clusters"
+plot_paths <- "KO_QC/KO_QC_images/2_KO_vln_final_clusters"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -834,20 +833,20 @@ knitr::include_graphics(plot_paths)
 ```{r}
 
 # UMAP plots
-pdf(file.path(WT_plots, "2_WT_UMAPs.pdf"), height = 7, width = 12)
-UMAPPlot(WT_f, group.by = "WT_SC_3", label =TRUE) + ggtitle("WT | Clusters")
-UMAPPlot(WT_f, group.by = "Phase", label =FALSE) + ggtitle("WT | Cell Cycle")
-FeaturePlot(WT_f, features = "nCount_RNA") + ggtitle("WT | # of Counts")
-FeaturePlot(WT_f, features = "nFeature_RNA") + ggtitle("WT | # of Genes")
-FeaturePlot(WT_f, features = "pct_mito") + ggtitle("WT | % of Mito Genes")
-FeaturePlot(WT_f, features = "pct_ribo") + ggtitle("WT | % of Ribo Genes")
+pdf(file.path(KO_plots, "2_KO_UMAPs.pdf"), height = 7, width = 12)
+UMAPPlot(KO_f, group.by = "KO_SC_3", label =TRUE) + ggtitle("KO | Clusters")
+UMAPPlot(KO_f, group.by = "Phase", label =FALSE) + ggtitle("KO | Cell Cycle")
+FeaturePlot(KO_f, features = "nCount_RNA") + ggtitle("KO | # of Counts")
+FeaturePlot(KO_f, features = "nFeature_RNA") + ggtitle("KO | # of Genes")
+FeaturePlot(KO_f, features = "pct_mito") + ggtitle("KO | % of Mito Genes")
+FeaturePlot(KO_f, features = "pct_ribo") + ggtitle("KO | % of Ribo Genes")
 dev.off()
 
 ```
 
-```{r, WT-filt-umap, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-umap, echo = FALSE, message=FALSE, eval=TRUE}
 
-plot_paths <- "WT_QC/WT_QC_images/2_WT_UMAPs"
+plot_paths <- "KO_QC/KO_QC_images/2_KO_UMAPs"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
@@ -857,11 +856,13 @@ knitr::include_graphics(plot_paths)
 
 ```{r}
 
-# Clean up the seurat (it'll later be merged with the KO seurat, this is just my way of making the 
+# Clean up the seurat (it'll later be merged with the WT seurat, this is just my way of making the 
 # final merged seurat organized)
-WT_f$RNA_snn_res.0.6 <- NULL 
-WT_f$seurat_clusters <- NULL 
 
-saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
+KO_f$RNA_snn_res.0.6 <- NULL 
+KO_f$seurat_clusters <- NULL 
+
+saveRDS(KO_f, file.path(getwd(), "KO_seurat.rds"))
 
 ```
+
