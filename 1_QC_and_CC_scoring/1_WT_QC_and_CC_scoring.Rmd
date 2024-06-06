@@ -331,7 +331,7 @@ dev.off()
 
 ```
 
-```{r, WT-unfilt-umap, echo = FALSE, message=FALSE, fig.align='center', eval=TRUE}
+```{r, WT-unfilt-umap, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs"
 

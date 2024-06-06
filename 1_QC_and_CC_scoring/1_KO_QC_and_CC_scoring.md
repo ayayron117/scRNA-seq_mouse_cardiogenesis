@@ -294,7 +294,7 @@ FeaturePlot(KO_s, features = "nuclear_fraction") + ggtitle("KO Unfiltered | Nucl
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0001.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0002.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0003.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0004.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0005.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0006.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0007.png" width="6000" style="display: block; margin: auto;" />
+<img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0001.png" width="70%" height="70%" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0002.png" width="70%" height="70%" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0003.png" width="70%" height="70%" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0004.png" width="70%" height="70%" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0005.png" width="70%" height="70%" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0006.png" width="70%" height="70%" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0007.png" width="70%" height="70%" />
 
 ## Cluster Markers
 

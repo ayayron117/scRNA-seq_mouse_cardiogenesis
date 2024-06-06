@@ -330,7 +330,7 @@ dev.off()
 
 ```
 
-```{r, KO-unfilt-umap, echo = FALSE, message=FALSE, fig.align='center', eval=TRUE}
+```{r, KO-unfilt-umap, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs"
 
