@@ -26,9 +26,9 @@ WT_markers <- file.path(WT_dir, "WT_Markers")
 dir.create(WT_markers)
 ```
 
-``` r
-########################### Create WT Seurat Object ############################
+## Create WT Seurat Object
 
+``` r
 # Import count matrix for the wildtype 
 WT_mat <- Read10X(file.path(proj_path, 
                             "WT",
@@ -58,9 +58,9 @@ WT_s <- NormalizeData(WT_s)
 nrow(WT_s@meta.data) # 15953
 ```
 
-``` r
-################################# WT DropletQC #################################
+## WT DropletQC
 
+``` r
 WT_nf <- nuclear_fraction_tags(outs = file.path(proj_path,
                                                 "WT",
                                                 "outs"),
@@ -118,9 +118,9 @@ WT_s <- AddMetaData(WT_s, WT_s.ed.dc$df$cell_status, col.name = "DropletQC")
 saveRDS(WT_s, file.path(WT_rds, "0_WT_seurat.rds"))
 ```
 
-``` r
-############################# Unfiltered WT Plots ##############################
+## Unfiltered WT Plots
 
+``` r
 # Ranges of counts, expressed genes, and percent mitochondria gene expression
 range(WT_s$nCount_RNA) # min = 500; max = 101497
 range(WT_s$nFeature_RNA) # min = 36; max = 10055
@@ -189,9 +189,13 @@ FeatureScatter(WT_s,
                group.by = "DropletQC") +
   ggtitle("WT - Unfiltered")
 dev.off()
+```
 
-################################################################################
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0001.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0002.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0003.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0004.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0005.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0006.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0007.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0008.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0009.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0010.png" width="80%" height="80%" style="display: block; margin: auto;" />
 
+################################################################################ 
+
+``` r
 # Violin plots
 pdf(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"), height = 6, width = 8)
 VlnPlot(WT_s, 
@@ -291,6 +295,8 @@ FeaturePlot(WT_s, features = "nuclear_fraction") + ggtitle("WT Unfiltered | Nucl
 dev.off()
 ```
 
+## Cluster Markers
+
 ``` r
 get.all.markers <- function (seurat, ident, path, fname) {
   
@@ -324,6 +330,8 @@ get.all.markers <- function (seurat, ident, path, fname) {
 }
 ```
 
+################################################################################ 
+
 ``` r
 all_markers <- get.all.markers(seurat = WT_s,
                                ident = "seurat_clusters",
@@ -331,9 +339,9 @@ all_markers <- get.all.markers(seurat = WT_s,
                                fname = "0_WT_cluster_markers.xlsx")
 ```
 
-``` r
-########################### WT Low-quality Filtering ###########################
+## WT Low-quality Filtering
 
+``` r
 WT_f <- subset(WT_s, 
                subset = nFeature_RNA <= 8000 &
                  nFeature_RNA >= 1500 & 
@@ -348,9 +356,9 @@ WT_f <- subset(WT_f, idents = "cell")
 nrow(WT_f@meta.data) # 5524
 ```
 
-``` r
-########################### WT Doublet Classifications #########################
+## WT Doublet Classifications
 
+``` r
 WT_f <- FindVariableFeatures(WT_f, 
                              selection.method = "vst", 
                              nfeatures = 2000)
@@ -394,9 +402,9 @@ WT_f <- AddMetaData(WT_f, WT_sce$scDblFinder.score, col.name = "scDblFinder.scor
 saveRDS(WT_f, file.path(WT_rds, "1_WT_seurat.rds"))
 ```
 
-``` r
-###################### WT Plots w/ scDblFinder Classifications #################
+## WT Plots with scDblFinder Classifications
 
+``` r
 pdf(file.path(WT_plots, "1_WT_doublet_scatter_plots.pdf"), height = 8, width = 12)
 FeatureScatter(WT_f,
                feature1 = "nCount_RNA", 
@@ -428,9 +436,11 @@ FeatureScatter(WT_f,
                feature2 = "pct_ribo", 
                group.by = "scDblFinder.class")
 dev.off()
+```
 
-################################################################################
+################################################################################ 
 
+``` r
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(WT_plots, "1_WT_doublet_vln_plots.pdf"), height = 6, width = 12)
 VlnPlot(WT_f, 
@@ -453,9 +463,11 @@ VlnPlot(WT_f,
         group.by = "scDblFinder.class") + 
   theme(legend.position="none")
 dev.off()
+```
 
-################################################################################
+################################################################################ 
 
+``` r
 # Violin plots grouped by scDblFinder clusters
 pdf(file.path(WT_plots, "1_WT_vln_scdblfinder_clusters.pdf"), height = 6, width = 12)
 VlnPlot(WT_f, 
@@ -478,9 +490,11 @@ VlnPlot(WT_f,
         group.by = "WT_SC_2") + 
   theme(legend.position="none")
 dev.off()
+```
 
-################################################################################
+################################################################################ 
 
+``` r
 # Violin plots grouped by original clusters
 pdf(file.path(WT_plots, "1_WT_vln_original_clusters.pdf"), height = 6, width = 12)
 VlnPlot(WT_f, 
@@ -503,9 +517,11 @@ VlnPlot(WT_f,
         group.by = "WT_SC_1") + 
   theme(legend.position="none")
 dev.off()
+```
 
-################################################################################
+################################################################################ 
 
+``` r
 # UMAP plots
 pdf(file.path(WT_plots, "1_WT_doublet_UMAPs.pdf"), height = 7, width = 12)
 UMAPPlot(WT_f, group.by = "WT_SC_2", label =TRUE) + ggtitle("WT Doublets | Clusters")
@@ -518,18 +534,20 @@ FeaturePlot(WT_f, features = "scDblFinder.score") + ggtitle("WT Doublets | scDbl
 dev.off()
 ```
 
-``` r
-############################### WT Doublet Removal #############################
+## WT Doublet Removal
 
+``` r
 # Filter out the cells classified as doublets
 Idents(WT_f) <- "scDblFinder.class"
 WT_f <- subset(WT_f, idents = "singlet")
 
 # Number of cells
 nrow(WT_f@meta.data) # 5055
+```
 
-################################################################################
+## Dim Reduction & Clustering After QC
 
+``` r
 WT_f <- FindVariableFeatures(WT_f, 
                              selection.method = "vst", 
                              nfeatures = 2000)
@@ -556,9 +574,9 @@ WT_f <- AddMetaData(WT_f, WT_f$seurat_clusters, col.name = "WT_SC_3")
 saveRDS(WT_f, file.path(WT_rds, "2_WT_seurat.rds"))
 ```
 
-``` r
-############################# WT Cell Cycle Scoring ############################
+## WT Cell Cycle Scoring
 
+``` r
 s.genes <- c("Mcm5","Pcna","Tyms","Fen1","Mcm2","Mcm4","Rrm1","Ung","Gins2",
              "Mcm6","Cdca7","Dtl","Prim1","Uhrf1","Hells","Rfc2","Rpa2","Nasp",
              "Rad51ap1","Gmnn","Wdr76","Slbp","Ccne2","Ubr7","Pold3","Msh2",
@@ -581,9 +599,9 @@ WT_f <- CellCycleScoring(WT_f,
 saveRDS(WT_f, file.path(WT_rds, "3_WT_seurat.rds"))
 ```
 
-``` r
-############################## WT Filtered Plots ###############################
+## WT Filtered Plots
 
+``` r
 pdf(file.path(WT_plots, "2_WT_scatter_plots.pdf"), height = 8, width = 12)
 FeatureScatter(WT_f,
                feature1 = "nCount_RNA", 
@@ -615,9 +633,11 @@ FeatureScatter(WT_f,
                feature2 = "pct_ribo", 
                group.by = "orig.ident")
 dev.off()
+```
 
-################################################################################
+################################################################################ 
 
+``` r
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(WT_plots, "2_WT_vln_plots.pdf"), height = 6, width = 12)
 VlnPlot(WT_f, 
@@ -665,9 +685,11 @@ VlnPlot(WT_f,
         group.by = "WT_SC_3") + 
   theme(legend.position="none")
 dev.off()
+```
 
-################################################################################
+################################################################################ 
 
+``` r
 # Violin plots grouped by original clusters
 pdf(file.path(WT_plots, "2_WT_vln_original_clusters.pdf"), height = 6, width = 12)
 VlnPlot(WT_f, 
@@ -690,9 +712,11 @@ VlnPlot(WT_f,
         group.by = "WT_SC_1") + 
   theme(legend.position="none")
 dev.off()
+```
 
-################################################################################
+################################################################################ 
 
+``` r
 # UMAP plots
 pdf(file.path(WT_plots, "2_WT_UMAPs.pdf"), height = 7, width = 12)
 UMAPPlot(WT_f, group.by = "WT_SC_3", label =TRUE) + ggtitle("WT | Clusters")
@@ -704,15 +728,13 @@ FeaturePlot(WT_f, features = "pct_ribo") + ggtitle("WT | % of Ribo Genes")
 dev.off()
 ```
 
+################################################################################ 
+
 ``` r
+# Clean up the seurat (it'll later be merged with the KO seurat, this is just
+# my way of making final merged seurat organized)
 WT_f$RNA_snn_res.0.6 <- NULL 
 WT_f$seurat_clusters <- NULL 
 
 saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
 ```
-
-``` r
-knitr::include_graphics(plot_paths)
-```
-
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0001.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0002.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0003.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0004.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0005.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0006.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0007.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0008.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0009.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0010.png" width="2160" style="display: block; margin: auto;" />
