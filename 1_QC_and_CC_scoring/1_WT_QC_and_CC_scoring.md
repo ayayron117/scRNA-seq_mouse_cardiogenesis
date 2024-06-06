@@ -193,8 +193,6 @@ dev.off()
 
 <img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0001.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0002.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0003.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0004.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0005.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0006.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0007.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0008.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0009.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0010.png" width="2160" style="display: block; margin: auto;" />
 
-################################################################################ 
-
 ``` r
 # Violin plots
 pdf(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"), height = 6, width = 8)
@@ -330,8 +328,6 @@ get.all.markers <- function (seurat, ident, path, fname) {
 }
 ```
 
-################################################################################ 
-
 ``` r
 all_markers <- get.all.markers(seurat = WT_s,
                                ident = "seurat_clusters",
@@ -438,8 +434,6 @@ FeatureScatter(WT_f,
 dev.off()
 ```
 
-################################################################################ 
-
 ``` r
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(WT_plots, "1_WT_doublet_vln_plots.pdf"), height = 6, width = 12)
@@ -464,8 +458,6 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 ```
-
-################################################################################ 
 
 ``` r
 # Violin plots grouped by scDblFinder clusters
@@ -492,8 +484,6 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-################################################################################ 
-
 ``` r
 # Violin plots grouped by original clusters
 pdf(file.path(WT_plots, "1_WT_vln_original_clusters.pdf"), height = 6, width = 12)
@@ -518,8 +508,6 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 ```
-
-################################################################################ 
 
 ``` r
 # UMAP plots
@@ -635,8 +623,6 @@ FeatureScatter(WT_f,
 dev.off()
 ```
 
-################################################################################ 
-
 ``` r
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(WT_plots, "2_WT_vln_plots.pdf"), height = 6, width = 12)
@@ -687,8 +673,6 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-################################################################################ 
-
 ``` r
 # Violin plots grouped by original clusters
 pdf(file.path(WT_plots, "2_WT_vln_original_clusters.pdf"), height = 6, width = 12)
@@ -714,8 +698,6 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-################################################################################ 
-
 ``` r
 # UMAP plots
 pdf(file.path(WT_plots, "2_WT_UMAPs.pdf"), height = 7, width = 12)
@@ -727,8 +709,6 @@ FeaturePlot(WT_f, features = "pct_mito") + ggtitle("WT | % of Mito Genes")
 FeaturePlot(WT_f, features = "pct_ribo") + ggtitle("WT | % of Ribo Genes")
 dev.off()
 ```
-
-################################################################################ 
 
 ``` r
 # Clean up the seurat (it'll later be merged with the KO seurat, this is just
