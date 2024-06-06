@@ -207,7 +207,7 @@ dev.off()
 
 ```
 
-```{r, WT-unfilt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-unfilt-scatter, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots"
 
@@ -306,7 +306,7 @@ file.remove(c(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"),
 
 ```
 
-```{r, WT-unfilt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-unfilt-vln, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots"
 
@@ -492,7 +492,7 @@ dev.off()
 
 ```
 
-```{r, WT-dbl-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-dbl-scatter, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_scatter_plots"
 
@@ -529,7 +529,7 @@ dev.off()
 
 ```
 
-```{r, WT-dbl-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-dbl-vln, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_vln_plots"
 
@@ -566,7 +566,7 @@ dev.off()
 
 ```
 
-```{r, WT-dbl-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-dbl-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters"
 
@@ -603,7 +603,7 @@ dev.off()
 
 ```
 
-```{r, WT-orig-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-orig-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/1_WT_vln_original_clusters"
 
@@ -628,7 +628,7 @@ dev.off()
 
 ```
 
-```{r, WT-dbl-umap, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-dbl-umap, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_UMAPs"
 
@@ -747,7 +747,7 @@ dev.off()
 
 ```
 
-```{r, WT-filt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-filt-scatter, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/2_WT_scatter_plots"
 
@@ -784,7 +784,7 @@ dev.off()
 
 ```
 
-```{r, WT-filt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-filt-vln, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/2_WT_vln_plots"
 
@@ -821,7 +821,7 @@ dev.off()
 
 ```
 
-```{r, WT-filt-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-filt-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/2_WT_vln_final_clusters"
 
@@ -845,7 +845,7 @@ dev.off()
 
 ```
 
-```{r, WT-filt-umap, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, WT-filt-umap, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "WT_QC/WT_QC_images/2_WT_UMAPs"
 

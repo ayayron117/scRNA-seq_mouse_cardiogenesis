@@ -191,7 +191,7 @@ FeatureScatter(WT_s,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0004.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0005.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0006.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0007.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0008.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0009.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0010.png" width="2160" />
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0004.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0005.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0006.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0007.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0008.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0009.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0010.png" width="70%" height="70%" />
 
 ``` r
 # Violin plots
@@ -280,7 +280,7 @@ file.remove(c(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"),
               file.path(WT_plots, "WT_unfiltered_vln_plots_3.pdf")))
 ```
 
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0001.png" width="1440" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0002.png" width="1440" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0003.png" width="1440" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0004.png" width="1440" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0005.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0006.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0007.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0008.png" width="2160" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0009.png" width="2700" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0010.png" width="2700" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0011.png" width="2700" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0012.png" width="2700" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0013.png" width="2700" />
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0004.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0005.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0006.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0007.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0008.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0009.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0010.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0011.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0012.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0013.png" width="70%" height="70%" />
 
 ``` r
 # UMAP plots
@@ -438,7 +438,7 @@ FeatureScatter(WT_f,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0004.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0005.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0006.png" width="2160" />
+<img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0004.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0005.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0006.png" width="70%" height="70%" />
 
 ``` r
 # Violin plots grouped by scDblFinder classifications
@@ -465,7 +465,7 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0004.png" width="2160" />
+<img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_vln_plots/0004.png" width="70%" height="70%" />
 
 ``` r
 # Violin plots grouped by scDblFinder clusters
@@ -492,7 +492,7 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0004.png" width="2160" />
+<img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters/0004.png" width="70%" height="70%" />
 
 ``` r
 # Violin plots grouped by original clusters
@@ -519,7 +519,7 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0004.png" width="2160" />
+<img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_vln_original_clusters/0004.png" width="70%" height="70%" />
 
 ``` r
 # UMAP plots
@@ -534,7 +534,7 @@ FeaturePlot(WT_f, features = "scDblFinder.score") + ggtitle("WT Doublets | scDbl
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0004.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0005.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0006.png" width="2160" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0007.png" width="2160" />
+<img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0004.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0005.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0006.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/1_WT_doublet_UMAPs/0007.png" width="70%" height="70%" />
 
 ## WT Doublet Removal
 
@@ -637,7 +637,7 @@ FeatureScatter(WT_f,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0004.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0005.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0006.png" width="2160" />
+<img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0004.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0005.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_scatter_plots/0006.png" width="70%" height="70%" />
 
 ``` r
 # Violin plots grouped by scDblFinder classifications
@@ -664,7 +664,7 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/2_WT_vln_plots/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_vln_plots/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_vln_plots/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_vln_plots/0004.png" width="2160" />
+<img src="WT_QC/WT_QC_images/2_WT_vln_plots/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_vln_plots/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_vln_plots/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_vln_plots/0004.png" width="70%" height="70%" />
 
 ``` r
 # Violin plots grouped by final clusters
@@ -691,32 +691,7 @@ VlnPlot(WT_f,
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0004.png" width="2160" />
-
-``` r
-# Violin plots grouped by original clusters
-pdf(file.path(WT_plots, "2_WT_vln_original_clusters.pdf"), height = 6, width = 12)
-VlnPlot(WT_f, 
-        features = "nCount_RNA", 
-        group.by = "WT_SC_1") + 
-  theme(legend.position="none")
-# # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
-        features = "nFeature_RNA", 
-        group.by = "WT_SC_1") + 
-  theme(legend.position="none")
-# # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
-        features = "pct_mito", 
-        group.by = "WT_SC_1") + 
-  theme(legend.position="none")
-# # # # # # # # # # # # # # # # # # # # # # # #
-VlnPlot(WT_f, 
-        features = "pct_ribo", 
-        group.by = "WT_SC_1") + 
-  theme(legend.position="none")
-dev.off()
-```
+<img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_vln_final_clusters/0004.png" width="70%" height="70%" />
 
 ``` r
 # UMAP plots
@@ -730,7 +705,7 @@ FeaturePlot(WT_f, features = "pct_ribo") + ggtitle("WT | % of Ribo Genes")
 dev.off()
 ```
 
-<img src="WT_QC/WT_QC_images/2_WT_UMAPs/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0004.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0005.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0006.png" width="2160" />
+<img src="WT_QC/WT_QC_images/2_WT_UMAPs/0001.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0002.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0003.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0004.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0005.png" width="70%" height="70%" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0006.png" width="70%" height="70%" />
 
 ``` r
 # Clean up the seurat (it'll later be merged with the KO seurat, this is just my way of making the 
