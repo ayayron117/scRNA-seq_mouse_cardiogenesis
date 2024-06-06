@@ -710,7 +710,3 @@ WT_f$seurat_clusters <- NULL
 
 saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
 ```
-
-``` r
-knitr::include_graphics(plot_paths)
-```
