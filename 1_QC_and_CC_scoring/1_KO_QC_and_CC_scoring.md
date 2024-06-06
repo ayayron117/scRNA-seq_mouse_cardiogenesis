@@ -190,7 +190,7 @@ FeatureScatter(KO_s,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0004.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0005.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0006.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0007.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0008.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0009.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0010.png" width="2160" />
+<img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0004.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0005.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0006.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0007.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0008.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0009.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots/0010.png" width="6000" />
 
 ``` r
 # Violin plots
@@ -279,7 +279,7 @@ file.remove(c(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"),
               file.path(KO_plots, "KO_unfiltered_vln_plots_3.pdf")))
 ```
 
-<img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0001.png" width="1440" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0002.png" width="1440" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0003.png" width="1440" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0004.png" width="1440" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0005.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0006.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0007.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0008.png" width="2160" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0009.png" width="2700" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0010.png" width="2700" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0011.png" width="2700" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0012.png" width="2700" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0013.png" width="2700" />
+<img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0001.png" width="4000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0002.png" width="4000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0003.png" width="4000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0004.png" width="4000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0005.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0006.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0007.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0008.png" width="6000" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0009.png" width="7500" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0010.png" width="7500" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0011.png" width="7500" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0012.png" width="7500" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots/0013.png" width="7500" />
 
 ``` r
 # UMAP plots
@@ -294,7 +294,7 @@ FeaturePlot(KO_s, features = "nuclear_fraction") + ggtitle("KO Unfiltered | Nucl
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0001.png" width="2160" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0002.png" width="2160" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0003.png" width="2160" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0004.png" width="2160" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0005.png" width="2160" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0006.png" width="2160" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0007.png" width="2160" style="display: block; margin: auto;" />
+<img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0001.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0002.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0003.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0004.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0005.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0006.png" width="6000" style="display: block; margin: auto;" /><img src="KO_QC/KO_QC_images/0_KO_unfiltered_UMAPs/0007.png" width="6000" style="display: block; margin: auto;" />
 
 ## Cluster Markers
 
@@ -437,7 +437,7 @@ FeatureScatter(KO_f,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0004.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0005.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0006.png" width="2160" />
+<img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0004.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0005.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_scatter_plots/0006.png" width="6000" />
 
 ``` r
 # Violin plots grouped by scDblFinder classifications
@@ -464,7 +464,7 @@ VlnPlot(KO_f,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0004.png" width="2160" />
+<img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_vln_plots/0004.png" width="6000" />
 
 ``` r
 # Violin plots grouped by scDblFinder clusters
@@ -491,7 +491,7 @@ VlnPlot(KO_f,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0004.png" width="2160" />
+<img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters/0004.png" width="6000" />
 
 ``` r
 # Violin plots grouped by original clusters
@@ -518,7 +518,7 @@ VlnPlot(KO_f,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0004.png" width="2160" />
+<img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_vln_original_clusters/0004.png" width="6000" />
 
 ``` r
 # UMAP plots
@@ -533,7 +533,7 @@ FeaturePlot(KO_f, features = "scDblFinder.score") + ggtitle("KO Doublets | scDbl
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0004.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0005.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0006.png" width="2160" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0007.png" width="2160" />
+<img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0004.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0005.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0006.png" width="6000" /><img src="KO_QC/KO_QC_images/1_KO_doublet_UMAPs/0007.png" width="6000" />
 
 ## KO Doublet Removal
 
@@ -636,7 +636,7 @@ FeatureScatter(KO_f,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0004.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0005.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0006.png" width="2160" />
+<img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0004.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0005.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_scatter_plots/0006.png" width="6000" />
 
 ``` r
 # Violin plots grouped by scDblFinder classifications
@@ -663,7 +663,7 @@ VlnPlot(KO_f,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/2_KO_vln_plots/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_vln_plots/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_vln_plots/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_vln_plots/0004.png" width="2160" />
+<img src="KO_QC/KO_QC_images/2_KO_vln_plots/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_vln_plots/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_vln_plots/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_vln_plots/0004.png" width="6000" />
 
 ``` r
 # Violin plots grouped by final clusters
@@ -690,7 +690,7 @@ VlnPlot(KO_f,
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0004.png" width="2160" />
+<img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_vln_final_clusters/0004.png" width="6000" />
 
 ``` r
 # UMAP plots
@@ -704,7 +704,7 @@ FeaturePlot(KO_f, features = "pct_ribo") + ggtitle("KO | % of Ribo Genes")
 dev.off()
 ```
 
-<img src="KO_QC/KO_QC_images/2_KO_UMAPs/0001.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0002.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0003.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0004.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0005.png" width="2160" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0006.png" width="2160" />
+<img src="KO_QC/KO_QC_images/2_KO_UMAPs/0001.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0002.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0003.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0004.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0005.png" width="6000" /><img src="KO_QC/KO_QC_images/2_KO_UMAPs/0006.png" width="6000" />
 
 ``` r
 # Clean up the seurat (it'll later be merged with the WT seurat, this is just my way of making the 
