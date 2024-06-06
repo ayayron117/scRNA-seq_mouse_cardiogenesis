@@ -711,14 +711,6 @@ WT_f$seurat_clusters <- NULL
 saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
 ```
 
-<div>
-
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0001.png" alt="Page 1" width="100%">
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0002.png" alt="Page 2" width="100%">
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0003.png" alt="Page 3" width="100%">
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0004.png" alt="Page 4" width="100%">
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0005.png" alt="Page 5" width="100%">
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0006.png" alt="Page 6" width="100%">
-<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0007.png" alt="Page 7" width="100%">
-
-</div>
+``` r
+knitr::include_graphics(plot_paths)
+```
