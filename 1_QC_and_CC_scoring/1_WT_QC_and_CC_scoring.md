@@ -733,8 +733,8 @@ dev.off()
 <img src="WT_QC/WT_QC_images/2_WT_UMAPs/0001.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0002.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0003.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0004.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0005.png" width="2160" /><img src="WT_QC/WT_QC_images/2_WT_UMAPs/0006.png" width="2160" />
 
 ``` r
-# Clean up the seurat (it'll later be merged with the KO seurat, this is just
-# my way of making final merged seurat organized)
+# Clean up the seurat (it'll later be merged with the KO seurat, this is just my way of making the 
+# final merged seurat organized)
 WT_f$RNA_snn_res.0.6 <- NULL 
 WT_f$seurat_clusters <- NULL 
 

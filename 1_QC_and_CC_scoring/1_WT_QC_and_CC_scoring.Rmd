@@ -894,8 +894,8 @@ knitr::include_graphics(plot_paths)
 
 ```{r}
 
-# Clean up the seurat (it'll later be merged with the KO seurat, this is just
-# my way of making final merged seurat organized)
+# Clean up the seurat (it'll later be merged with the KO seurat, this is just my way of making the 
+# final merged seurat organized)
 WT_f$RNA_snn_res.0.6 <- NULL 
 WT_f$seurat_clusters <- NULL 
 
