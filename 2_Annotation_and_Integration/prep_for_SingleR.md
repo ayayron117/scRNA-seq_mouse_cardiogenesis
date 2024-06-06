@@ -1,4 +1,4 @@
-Preparation for singleR
+Preparation for SingleR
 ================
 Aaron Mohammed
 
