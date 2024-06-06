@@ -206,7 +206,7 @@ dev.off()
 
 ```
 
-```{r, KO-unfilt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-unfilt-scatter, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/0_KO_unfiltered_scatter_plots"
 
@@ -305,7 +305,7 @@ file.remove(c(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"),
 
 ```
 
-```{r, KO-unfilt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-unfilt-vln, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/0_KO_unfiltered_vln_plots"
 
@@ -491,7 +491,7 @@ dev.off()
 
 ```
 
-```{r, KO-dbl-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-scatter, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/1_KO_doublet_scatter_plots"
 
@@ -528,7 +528,7 @@ dev.off()
 
 ```
 
-```{r, KO-dbl-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-vln, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/1_KO_doublet_vln_plots"
 
@@ -565,7 +565,7 @@ dev.off()
 
 ```
 
-```{r, KO-dbl-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/1_KO_vln_scdblfinder_clusters"
 
@@ -602,7 +602,7 @@ dev.off()
 
 ```
 
-```{r, KO-orig-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-orig-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/1_KO_vln_original_clusters"
 
@@ -627,7 +627,7 @@ dev.off()
 
 ```
 
-```{r, KO-dbl-umap, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-dbl-umap, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/1_KO_doublet_UMAPs"
 
@@ -746,7 +746,7 @@ dev.off()
 
 ```
 
-```{r, KO-filt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-scatter, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/2_KO_scatter_plots"
 
@@ -783,7 +783,7 @@ dev.off()
 
 ```
 
-```{r, KO-filt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-vln, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/2_KO_vln_plots"
 
@@ -820,7 +820,7 @@ dev.off()
 
 ```
 
-```{r, KO-filt-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/2_KO_vln_final_clusters"
 
@@ -844,7 +844,7 @@ dev.off()
 
 ```
 
-```{r, KO-filt-umap, echo = FALSE, message=FALSE, eval=TRUE}
+```{r, KO-filt-umap, echo = FALSE, message=FALSE, eval=TRUE, out.height='70%', out.width='70%'}
 
 plot_paths <- "KO_QC/KO_QC_images/2_KO_UMAPs"
 
