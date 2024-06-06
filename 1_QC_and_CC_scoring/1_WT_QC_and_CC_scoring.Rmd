@@ -36,9 +36,9 @@ dir.create(WT_markers)
 
 ```
 
-```{r}
+## Create WT Seurat Object
 
-########################### Create WT Seurat Object ############################
+```{r}
 
 # Import count matrix for the wildtype 
 WT_mat <- Read10X(file.path(proj_path, 
@@ -70,9 +70,9 @@ nrow(WT_s@meta.data) # 15953
 
 ```
 
-```{r}
+## WT DropletQC
 
-################################# WT DropletQC #################################
+```{r}
 
 WT_nf <- nuclear_fraction_tags(outs = file.path(proj_path,
                                                 "WT",
@@ -132,9 +132,9 @@ saveRDS(WT_s, file.path(WT_rds, "0_WT_seurat.rds"))
 
 ```
 
-```{r}
+## Unfiltered WT Plots
 
-############################# Unfiltered WT Plots ##############################
+```{r}
 
 # Ranges of counts, expressed genes, and percent mitochondria gene expression
 range(WT_s$nCount_RNA) # min = 500; max = 101497
@@ -205,7 +205,19 @@ FeatureScatter(WT_s,
   ggtitle("WT - Unfiltered")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-unfilt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # Violin plots
 pdf(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"), height = 6, width = 8)
@@ -292,7 +304,19 @@ file.remove(c(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"),
               file.path(WT_plots, "WT_unfiltered_vln_plots_2.pdf"),
               file.path(WT_plots, "WT_unfiltered_vln_plots_3.pdf")))
 
-################################################################################
+```
+
+```{r, WT-unfilt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # UMAP plots
 pdf(file.path(WT_plots, "0_WT_unfiltered_UMAPs.pdf"), height = 7, width = 12)
@@ -306,6 +330,18 @@ FeaturePlot(WT_s, features = "nuclear_fraction") + ggtitle("WT Unfiltered | Nucl
 dev.off()
 
 ```
+
+```{r, WT-unfilt-umap, echo = FALSE, message=FALSE, fig.align='center', eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+## Cluster Markers
 
 ```{r All markers function}
 
@@ -351,9 +387,9 @@ all_markers <- get.all.markers(seurat = WT_s,
 
 ```
 
-```{r}
+## WT Low-quality Filtering
 
-########################### WT Low-quality Filtering ###########################
+```{r}
 
 WT_f <- subset(WT_s, 
                subset = nFeature_RNA <= 8000 &
@@ -370,9 +406,9 @@ nrow(WT_f@meta.data) # 5524
 
 ```
 
-```{r}
+## WT Doublet Classifications
 
-########################### WT Doublet Classifications #########################
+```{r}
 
 WT_f <- FindVariableFeatures(WT_f, 
                              selection.method = "vst", 
@@ -418,9 +454,9 @@ saveRDS(WT_f, file.path(WT_rds, "1_WT_seurat.rds"))
 
 ```
 
-```{r}
+## WT Plots with scDblFinder Classifications 
 
-###################### WT Plots w/ scDblFinder Classifications #################
+```{r}
 
 pdf(file.path(WT_plots, "1_WT_doublet_scatter_plots.pdf"), height = 8, width = 12)
 FeatureScatter(WT_f,
@@ -454,7 +490,19 @@ FeatureScatter(WT_f,
                group.by = "scDblFinder.class")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-dbl-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_scatter_plots"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(WT_plots, "1_WT_doublet_vln_plots.pdf"), height = 6, width = 12)
@@ -479,7 +527,19 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-dbl-vln, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_vln_plots"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # Violin plots grouped by scDblFinder clusters
 pdf(file.path(WT_plots, "1_WT_vln_scdblfinder_clusters.pdf"), height = 6, width = 12)
@@ -504,7 +564,19 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-dbl-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/1_WT_vln_scdblfinder_clusters"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # Violin plots grouped by original clusters
 pdf(file.path(WT_plots, "1_WT_vln_original_clusters.pdf"), height = 6, width = 12)
@@ -529,7 +601,19 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-orig-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/1_WT_vln_original_clusters"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # UMAP plots
 pdf(file.path(WT_plots, "1_WT_doublet_UMAPs.pdf"), height = 7, width = 12)
@@ -544,10 +628,19 @@ dev.off()
 
 ```
 
+```{r, WT-dbl-umap, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/1_WT_doublet_UMAPs"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+## WT Doublet Removal
 
 ```{r}
-
-############################### WT Doublet Removal #############################
 
 # Filter out the cells classified as doublets
 Idents(WT_f) <- "scDblFinder.class"
@@ -556,7 +649,11 @@ WT_f <- subset(WT_f, idents = "singlet")
 # Number of cells
 nrow(WT_f@meta.data) # 5055
 
-################################################################################
+```
+
+## Dim Reduction & Clustering After QC
+
+```{r}
 
 WT_f <- FindVariableFeatures(WT_f, 
                              selection.method = "vst", 
@@ -585,10 +682,9 @@ saveRDS(WT_f, file.path(WT_rds, "2_WT_seurat.rds"))
 
 ```
 
+## WT Cell Cycle Scoring
 
 ```{r}
-
-############################# WT Cell Cycle Scoring ############################
 
 s.genes <- c("Mcm5","Pcna","Tyms","Fen1","Mcm2","Mcm4","Rrm1","Ung","Gins2",
              "Mcm6","Cdca7","Dtl","Prim1","Uhrf1","Hells","Rfc2","Rpa2","Nasp",
@@ -613,9 +709,9 @@ saveRDS(WT_f, file.path(WT_rds, "3_WT_seurat.rds"))
 
 ```
 
-```{r}
+## WT Filtered Plots
 
-############################## WT Filtered Plots ###############################
+```{r}
 
 pdf(file.path(WT_plots, "2_WT_scatter_plots.pdf"), height = 8, width = 12)
 FeatureScatter(WT_f,
@@ -649,7 +745,19 @@ FeatureScatter(WT_f,
                group.by = "orig.ident")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-filt-scatter, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/2_WT_scatter_plots"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(WT_plots, "2_WT_vln_plots.pdf"), height = 6, width = 12)
@@ -674,7 +782,19 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-filt-vln, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/2_WT_vln_plots"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # Violin plots grouped by final clusters
 pdf(file.path(WT_plots, "2_WT_vln_final_clusters.pdf"), height = 6, width = 12)
@@ -699,7 +819,19 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-filt-vln-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/2_WT_vln_final_clusters"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # Violin plots grouped by original clusters
 pdf(file.path(WT_plots, "2_WT_vln_original_clusters.pdf"), height = 6, width = 12)
@@ -724,7 +856,19 @@ VlnPlot(WT_f,
   theme(legend.position="none")
 dev.off()
 
-################################################################################
+```
+
+```{r, WT-filt-orig-clusters, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/2_WT_vln_original_clusters"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
+```{r}
 
 # UMAP plots
 pdf(file.path(WT_plots, "2_WT_UMAPs.pdf"), height = 7, width = 12)
@@ -738,25 +882,23 @@ dev.off()
 
 ```
 
+```{r, WT-filt-umap, echo = FALSE, message=FALSE, eval=TRUE}
+
+plot_paths <- "WT_QC/WT_QC_images/2_WT_UMAPs"
+
+plot_paths <- dir(plot_paths, full.names = TRUE)
+
+knitr::include_graphics(plot_paths)
+
+```
+
 ```{r}
 
+# Clean up the seurat (it'll later be merged with the KO seurat, this is just
+# my way of making final merged seurat organized)
 WT_f$RNA_snn_res.0.6 <- NULL 
 WT_f$seurat_clusters <- NULL 
 
 saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
-
-```
-
-```{r, include=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
-
-plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots"
-
-plot_paths <- dir(plot_paths, full.names = TRUE)
-
-```
-
-```{r, image-ref-for-in-text, echo = TRUE, message=FALSE, fig.align='center', out.width='500\\linewidth', out.height='500\\linewidth', fig.pos='H', eval=TRUE}
-
-knitr::include_graphics(plot_paths)
 
 ```
