@@ -749,7 +749,7 @@ saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
 
 ```{r, include=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
 
-plot_paths <- "/Users/asm/Documents/ayayron117_portfolio/scRNA-seq_mouse_cardiogenesis/1_QC_and_CC_scoring/WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots"
+plot_paths <- "WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots"
 
 plot_paths <- dir(plot_paths, full.names = TRUE)
 
