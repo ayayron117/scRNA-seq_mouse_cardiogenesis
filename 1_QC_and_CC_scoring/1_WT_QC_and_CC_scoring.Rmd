@@ -755,7 +755,7 @@ plot_paths <- dir(plot_paths, full.names = TRUE)
 
 ```
 
-```{r, image-ref-for-in-text, message=FALSE, fig.align='center', out.width='500\\linewidth', out.height='500\\linewidth', fig.pos='H', include=FALSE, eval=TRUE}
+```{r, image-ref-for-in-text, echo = TRUE, message=FALSE, fig.align='center', out.width='500\\linewidth', out.height='500\\linewidth', fig.pos='H', include=FALSE, eval=TRUE}
 
 knitr::include_graphics(plot_paths)
 
