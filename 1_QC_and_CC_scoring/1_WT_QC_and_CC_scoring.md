@@ -278,9 +278,11 @@ pdf_combine(input = c(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"),
 file.remove(c(file.path(WT_plots, "WT_unfiltered_vln_plots_1.pdf"),
               file.path(WT_plots, "WT_unfiltered_vln_plots_2.pdf"),
               file.path(WT_plots, "WT_unfiltered_vln_plots_3.pdf")))
+```
 
-################################################################################
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0001.png" width="1440" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0002.png" width="1440" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0003.png" width="1440" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0004.png" width="1440" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0005.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0006.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0007.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0008.png" width="2160" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0009.png" width="2700" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0010.png" width="2700" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0011.png" width="2700" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0012.png" width="2700" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_vln_plots/0013.png" width="2700" style="display: block; margin: auto;" />
 
+``` r
 # UMAP plots
 pdf(file.path(WT_plots, "0_WT_unfiltered_UMAPs.pdf"), height = 7, width = 12)
 UMAPPlot(WT_s, group.by = "WT_SC_1", label =TRUE) + ggtitle("WT Unfiltered | Clusters")
