@@ -292,20 +292,6 @@ dev.off()
 ```
 
 ``` r
-out.extra="page=2"
-knitr::include_graphics(path = "/Users/asm/Documents/ayayron117_portfolio/scRNA-seq_mouse_cardiogenesis/1_QC_and_CC_scoring/WT_QC/WT_Plots/0_WT_unfiltered_scatter_plots.pdf")
-```
-
-<div class="figure">
-
-<embed src="WT_QC/WT_Plots/0_WT_unfiltered_scatter_plots.pdf" title="caption" width="85%" page=2 type="application/pdf" />
-<p class="caption">
-caption
-</p>
-
-</div>
-
-``` r
 get.all.markers <- function (seurat, ident, path, fname) {
   
   DefaultAssay(seurat) <- "RNA"
@@ -724,3 +710,29 @@ WT_f$seurat_clusters <- NULL
 
 saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
 ```
+
+<style>
+.scrollable-container {
+  width: 100%;
+  height: 500px; /* Adjust the height as needed */
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+.scrollable-container img {
+  display: block;
+  margin: 0 auto 10px; /* Center images and add some space between them */
+}
+</style>
+
+<div class="scrollable-container">
+
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0001.png" alt="Page 1">
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0002.png" alt="Page 2">
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0003.png" alt="Page 3">
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0004.png" alt="Page 4">
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0005.png" alt="Page 5">
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0006.png" alt="Page 6">
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0007.png" alt="Page 7">
+
+</div>
