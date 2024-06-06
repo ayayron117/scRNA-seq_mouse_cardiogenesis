@@ -295,6 +295,8 @@ FeaturePlot(WT_s, features = "nuclear_fraction") + ggtitle("WT Unfiltered | Nucl
 dev.off()
 ```
 
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0001.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0002.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0003.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0004.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0005.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0006.png" width="80%" height="80%" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_UMAPs/0007.png" width="80%" height="80%" style="display: block; margin: auto;" />
+
 ## Cluster Markers
 
 ``` r
