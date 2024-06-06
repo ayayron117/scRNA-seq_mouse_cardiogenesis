@@ -710,3 +710,9 @@ WT_f$seurat_clusters <- NULL
 
 saveRDS(WT_f, file.path(getwd(), "WT_seurat.rds"))
 ```
+
+``` r
+knitr::include_graphics(plot_paths)
+```
+
+<img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0001.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0002.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0003.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0004.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0005.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0006.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0007.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0008.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0009.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" /><img src="WT_QC/WT_QC_images/0_WT_unfiltered_scatter_plots/0010.png" width="500\linewidth" height="500\linewidth" style="display: block; margin: auto;" />
