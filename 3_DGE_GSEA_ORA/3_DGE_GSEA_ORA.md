@@ -1,4 +1,4 @@
-DGE Analysis
+DGE, GSEA, & ORA Analysis
 ================
 Aaron Mohammed
 
