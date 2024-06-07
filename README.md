@@ -37,5 +37,5 @@
 
 <p align="center">
   <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/5e34a938-505e-4cc1-baff-c1c4250909fb">
-  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/f18bb25a-78bf-4958-b820-12b06c940b77">
+  <img width="400" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/f18bb25a-78bf-4958-b820-12b06c940b77">
 </p>
