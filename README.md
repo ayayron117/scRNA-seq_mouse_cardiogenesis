@@ -3,8 +3,8 @@
 ## **1.** [Quality Control](https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/tree/main/1_QC_and_CC_scoring)
 
 <p align="center">
-  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/blob/main/1_QC_and_CC_scoring/WT_QC/WT_QC_images/2_WT_vln_final_clusters/0002.png"><br>
-  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/blob/main/1_QC_and_CC_scoring/WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0004.png">
+  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/blob/main/1_QC_and_CC_scoring/WT_QC/WT_QC_images/2_WT_vln_final_clusters/0002.png"><br>
+  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/blob/main/1_QC_and_CC_scoring/WT_QC/WT_QC_images/1_WT_doublet_scatter_plots/0004.png">
 </p>
 
 ## **2.** [Annotation & Integration](https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/tree/main/2_Annotation_and_Integration)
@@ -26,12 +26,7 @@
 
 <p align="center">
   <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/85f59ced-61fe-4a59-b8c4-5ea498df86ca">
-">
   <br>
   <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/95c02fcc-cca2-47fb-804e-da423b5e3a9d">
-">
-  <br>
-  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/4e66296c-2222-4415-806a-278f9ced2582">
-">
 </p>
 
