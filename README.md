@@ -25,13 +25,13 @@
 ## **4.** [RNA Velocity](https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/tree/main/4_RNA_velocity)
 
 <p align="center">
-  <img width="600" alt="image" src="<img width="1197" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/85f59ced-61fe-4a59-b8c4-5ea498df86ca">
+  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/85f59ced-61fe-4a59-b8c4-5ea498df86ca">
 ">
   <br>
-  <img width="600" alt="image" src="<img width="1122" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/95c02fcc-cca2-47fb-804e-da423b5e3a9d">
+  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/95c02fcc-cca2-47fb-804e-da423b5e3a9d">
 ">
   <br>
-  <img width="600" alt="image" src="<img width="1195" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/4e66296c-2222-4415-806a-278f9ced2582">
+  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/4e66296c-2222-4415-806a-278f9ced2582">
 ">
 </p>
 
