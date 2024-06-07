@@ -17,9 +17,12 @@
 ## **3.** [DGE Analysis, GSEA, & ORA](https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/tree/main/3_DGE_GSEA_ORA)
 
 <p align="center">
-  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/blob/main/3_DGE_GSEA_ORA/Plots/Atrial/DESeq2_KO_vs_WT_Atrial.pdf">
+  <img width="300" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/b5d90dd7-48fd-4e41-b4e6-f9ed65e53f27">
+  <img width="300" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/c8c42237-0b0a-4ed7-9c56-0b706ac6d334">
+  <img width="300" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/b70a27e9-5e98-4302-b6eb-2317b6c9f0e5">
   <br>
-  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/7ace3d8a-85ea-40f6-9ec0-8f8a2224ee07">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/090ae33e-f5e8-4d9b-a779-9d3ae01b6591">
+  <img width="500" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/0e5a1903-b6db-4d93-8a5f-a772eeba4b73">
 </p>
 
 ## **4.** [RNA Velocity](https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/tree/main/4_RNA_velocity)
