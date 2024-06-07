@@ -269,6 +269,8 @@ sweep.cluster.res(seurat = merged_s,
                   fname = "1_cluster_res_sweep.pdf")
 ```
 
+<img src="Merged/Plots/1_cluster_res_sweep/0001.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0002.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0003.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0004.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0005.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0006.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0007.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0008.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0009.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0010.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0011.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0012.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0013.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0014.png" width="70%" height="70%" /><img src="Merged/Plots/1_cluster_res_sweep/0015.png" width="70%" height="70%" />
+
 ``` r
 merged_s <- FindClusters(merged_s, 
                          resolution = 1,
@@ -286,6 +288,8 @@ UMAPPlot(merged_s, group.by = "specific_annot_1", label = TRUE)
 UMAPPlot(merged_s, group.by = "Phase")
 dev.off()
 ```
+
+<img src="Merged/Plots/2_clusters/0001.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters/0002.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters/0003.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters/0004.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters/0005.png" width="70%" height="70%" />
 
 ``` r
 merged_s <- integrate.and.umap(seurat = merged_s,
@@ -305,6 +309,8 @@ dev.off()
 
 merged_s <- readRDS(file.path(RDS_dir, "1_merged_seurat.rds"))
 ```
+
+<img src="Merged/Plots/2_clusters_no_cc_reg/0001.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters_no_cc_reg/0002.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters_no_cc_reg/0003.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters_no_cc_reg/0004.png" width="70%" height="70%" /><img src="Merged/Plots/2_clusters_no_cc_reg/0005.png" width="70%" height="70%" />
 
 ``` r
 all_markers <- get.all.markers(seurat = merged_s,
@@ -376,6 +382,8 @@ UMAPPlot(merged_s, group.by = "broad_annot_3", label = TRUE)
 dev.off()
 ```
 
+<img src="Merged/Plots/3_broad_annot/0001.png" width="70%" height="70%" /><img src="Merged/Plots/3_broad_annot/0002.png" width="70%" height="70%" />
+
 ``` r
 merged_umap <- UMAPPlot(merged_s, group.by = "broad_annot_3", label = TRUE)
 
@@ -443,6 +451,8 @@ dev.off()
 saveRDS(merged_s, file.path(RDS_dir, "3_merged_seurat.rds"))
 ```
 
+<img src="Merged/Plots/4_cardiac/0001.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac/0002.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac/0003.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac/0004.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac/0005.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac/0006.png" width="70%" height="70%" />
+
 ``` r
 merged_s <- integrate.and.umap(seurat = merged_s,
                                nfeat = 2000,
@@ -463,6 +473,8 @@ dev.off()
 merged_s <- readRDS(file.path(RDS_dir, "3_merged_seurat.rds"))
 ```
 
+<img src="Merged/Plots/4_cardiac_no_cc_reg/0001.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac_no_cc_reg/0002.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac_no_cc_reg/0003.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac_no_cc_reg/0004.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac_no_cc_reg/0005.png" width="70%" height="70%" /><img src="Merged/Plots/4_cardiac_no_cc_reg/0006.png" width="70%" height="70%" />
+
 ``` r
 DefaultAssay(merged_s) <- "RNA"
 pdf(file.path(plots_dir, "5_CPC_markers.pdf"), height = 7, width = 12)
@@ -476,6 +488,8 @@ FeaturePlot(merged_s, features = "Hand1")
 FeaturePlot(merged_s, features = "Hand2")
 dev.off()
 ```
+
+<img src="Merged/Plots/5_CPC_markers/0001.png" width="70%" height="70%" /><img src="Merged/Plots/5_CPC_markers/0002.png" width="70%" height="70%" /><img src="Merged/Plots/5_CPC_markers/0003.png" width="70%" height="70%" /><img src="Merged/Plots/5_CPC_markers/0004.png" width="70%" height="70%" /><img src="Merged/Plots/5_CPC_markers/0005.png" width="70%" height="70%" /><img src="Merged/Plots/5_CPC_markers/0006.png" width="70%" height="70%" /><img src="Merged/Plots/5_CPC_markers/0007.png" width="70%" height="70%" /><img src="Merged/Plots/5_CPC_markers/0008.png" width="70%" height="70%" />
 
 ``` r
 Idents(merged_s) <- "Broad_Annotation"
@@ -495,6 +509,8 @@ sweep.cluster.res(seurat = myo_s,
                   fname = "6_myo_res_sweep.pdf")
 ```
 
+<img src="Merged/Plots/6_myo_res_sweep/0001.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0002.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0003.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0004.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0005.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0006.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0007.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0008.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0009.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0010.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0011.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0012.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0013.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0014.png" width="70%" height="70%" /><img src="Merged/Plots/6_myo_res_sweep/0015.png" width="70%" height="70%" />
+
 ``` r
 myo_s <- FindClusters(myo_s, 
                       resolution = 0.9,
@@ -511,6 +527,8 @@ UMAPPlot(myo_s, group.by = "specific_annot_1", label = TRUE)
 UMAPPlot(myo_s, group.by = "orig.ident")
 dev.off()
 ```
+
+<img src="Merged/Plots/7_myo_subset/0001.png" width="70%" height="70%" /><img src="Merged/Plots/7_myo_subset/0002.png" width="70%" height="70%" /><img src="Merged/Plots/7_myo_subset/0003.png" width="70%" height="70%" /><img src="Merged/Plots/7_myo_subset/0004.png" width="70%" height="70%" />
 
 ``` r
 all_markers <- get.all.markers(seurat = myo_s,
@@ -560,6 +578,8 @@ saveRDS(myo_s, file.path(RDS_dir, "5_myo_seurat.rds"))
 # myo_s <- readRDS(file.path(RDS_dir, "5_myo_seurat.rds"))
 ```
 
+<img src="Merged/Plots/8_myo_annotated/0001.png" width="70%" height="70%" /><img src="Merged/Plots/8_myo_annotated/0002.png" width="70%" height="70%" /><img src="Merged/Plots/8_myo_annotated/0003.png" width="70%" height="70%" /><img src="Merged/Plots/8_myo_annotated/0004.png" width="70%" height="70%" /><img src="Merged/Plots/8_myo_annotated/0005.png" width="70%" height="70%" />
+
 ``` r
 merged_s <- AddMetaData(merged_s, merged_s$specific_annot_1, col.name = "Specific_Annotation")
 
@@ -595,6 +615,8 @@ dev.off()
 saveRDS(merged_s, file.path(getwd(), "final_cardiac_seurat.rds"))
 ```
 
+<img src="Merged/Plots/9_cardiac_annotated/0001.png" width="70%" height="70%" /><img src="Merged/Plots/9_cardiac_annotated/0002.png" width="70%" height="70%" /><img src="Merged/Plots/9_cardiac_annotated/0003.png" width="70%" height="70%" /><img src="Merged/Plots/9_cardiac_annotated/0004.png" width="70%" height="70%" />
+
 ``` r
 full_s <- readRDS(file.path(RDS_dir, "2_merged_seurat.rds"))
 
@@ -614,6 +636,8 @@ dev.off()
 saveRDS(full_s, file.path(getwd(), "final_seurat.rds"))
 ```
 
+<img src="Merged/Plots/10_specific_annot/0001.png" width="70%" height="70%" /><img src="Merged/Plots/10_specific_annot/0002.png" width="70%" height="70%" /><img src="Merged/Plots/10_specific_annot/0003.png" width="70%" height="70%" /><img src="Merged/Plots/10_specific_annot/0004.png" width="70%" height="70%" />
+
 ``` r
 pdf(file.path(plots_dir, "11_broad_annot.pdf"), height = 7, width = 12)
 UMAPPlot(full_s, group.by = "Broad_Annotation")
@@ -622,6 +646,8 @@ UMAPPlot(full_s, group.by = "orig.ident")
 UMAPPlot(full_s, group.by = "Phase")
 dev.off()
 ```
+
+<img src="Merged/Plots/11_broad_annot/0001.png" width="70%" height="70%" /><img src="Merged/Plots/11_broad_annot/0002.png" width="70%" height="70%" /><img src="Merged/Plots/11_broad_annot/0003.png" width="70%" height="70%" /><img src="Merged/Plots/11_broad_annot/0004.png" width="70%" height="70%" />
 
 ``` r
 pdf(file.path(plots_dir, "12_All_clusters_cc_regressed.pdf"), height = 7, width = 12)
@@ -637,6 +663,8 @@ FeaturePlot(full_s, features = "pct_mito")
 FeaturePlot(full_s, features = "pct_ribo")
 dev.off()
 ```
+
+<img src="Merged/Plots/12_All_clusters_cc_regressed/0001.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0002.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0003.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0004.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0005.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0006.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0007.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0008.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0009.png" width="70%" height="70%" /><img src="Merged/Plots/12_All_clusters_cc_regressed/0010.png" width="70%" height="70%" />
 
 ``` r
 cardiac_s <- readRDS(file.path(getwd(), "final_cardiac_seurat.rds"))
@@ -655,6 +683,8 @@ FeaturePlot(cardiac_s, features = "pct_ribo")
 dev.off()
 ```
 
+<img src="Merged/Plots/13_Cardiac_cc_regressed/0001.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0002.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0003.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0004.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0005.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0006.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0007.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0008.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0009.png" width="70%" height="70%" /><img src="Merged/Plots/13_Cardiac_cc_regressed/0010.png" width="70%" height="70%" />
+
 ``` r
 myo_s <- readRDS(file.path(getwd(), "final_myo_seurat.rds"))
 
@@ -669,6 +699,8 @@ FeaturePlot(myo_s, features = "pct_mito")
 FeaturePlot(myo_s, features = "pct_ribo")
 dev.off()
 ```
+
+<img src="Merged/Plots/14_Myocardial_cc_regressed/0001.png" width="70%" height="70%" /><img src="Merged/Plots/14_Myocardial_cc_regressed/0002.png" width="70%" height="70%" /><img src="Merged/Plots/14_Myocardial_cc_regressed/0003.png" width="70%" height="70%" /><img src="Merged/Plots/14_Myocardial_cc_regressed/0004.png" width="70%" height="70%" /><img src="Merged/Plots/14_Myocardial_cc_regressed/0005.png" width="70%" height="70%" /><img src="Merged/Plots/14_Myocardial_cc_regressed/0006.png" width="70%" height="70%" /><img src="Merged/Plots/14_Myocardial_cc_regressed/0007.png" width="70%" height="70%" /><img src="Merged/Plots/14_Myocardial_cc_regressed/0008.png" width="70%" height="70%" />
 
 ``` r
 full_s <- readRDS(file.path(getwd(), "final_seurat.rds"))
@@ -696,6 +728,8 @@ dev.off()
 cardiac_s <- readRDS(file.path(getwd(), "final_cardiac_seurat.rds"))
 ```
 
+<img src="Merged/Plots/15_All_clusters_no_cc_reg/0001.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0002.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0003.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0004.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0005.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0006.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0007.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0008.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0009.png" width="70%" height="70%" /><img src="Merged/Plots/15_All_clusters_no_cc_reg/0010.png" width="70%" height="70%" />
+
 ``` r
 cardiac_s <- integrate.and.umap(seurat = cardiac_s,
                                nfeat = 2000,
@@ -718,6 +752,8 @@ FeaturePlot(cardiac_s, features = "pct_ribo")
 dev.off()
 ```
 
+<img src="Merged/Plots/16_Cardiac_no_cc_reg/0001.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0002.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0003.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0004.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0005.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0006.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0007.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0008.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0009.png" width="70%" height="70%" /><img src="Merged/Plots/16_Cardiac_no_cc_reg/0010.png" width="70%" height="70%" />
+
 ``` r
 myo_s <- readRDS(file.path(getwd(), "final_myo_seurat.rds"))
 
@@ -739,3 +775,5 @@ FeaturePlot(myo_s, features = "pct_mito")
 FeaturePlot(myo_s, features = "pct_ribo")
 dev.off()
 ```
+
+<img src="Merged/Plots/17_Myocardial_no_cc_reg/0001.png" width="70%" height="70%" /><img src="Merged/Plots/17_Myocardial_no_cc_reg/0002.png" width="70%" height="70%" /><img src="Merged/Plots/17_Myocardial_no_cc_reg/0003.png" width="70%" height="70%" /><img src="Merged/Plots/17_Myocardial_no_cc_reg/0004.png" width="70%" height="70%" /><img src="Merged/Plots/17_Myocardial_no_cc_reg/0005.png" width="70%" height="70%" /><img src="Merged/Plots/17_Myocardial_no_cc_reg/0006.png" width="70%" height="70%" /><img src="Merged/Plots/17_Myocardial_no_cc_reg/0007.png" width="70%" height="70%" /><img src="Merged/Plots/17_Myocardial_no_cc_reg/0008.png" width="70%" height="70%" />
