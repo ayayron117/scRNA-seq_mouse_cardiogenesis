@@ -252,25 +252,27 @@ all_markers <- get.all.markers(seurat = KO_s,
                                fname = "1_KO_markers.xlsx")
 
 saveRDS(all_markers, file.path(markers_dir, "1_KO_markers.rds"))
+```
 
+``` r
+# Myocardial markers
+pdf(file.path(plots_dir, "KO_myo_markers.pdf"), height = 7, width = 12)
+FeaturePlot(KO_s, features = "Actc1")
+FeaturePlot(KO_s, features = "Myl4")
+FeaturePlot(KO_s, features = "Ttn")
+FeaturePlot(KO_s, features = "Tnnc1")
+FeaturePlot(KO_s, features = "Tnnt2")
+FeaturePlot(KO_s, features = "Acta2")
+FeaturePlot(KO_s, features = "Cryab")
+FeaturePlot(KO_s, features = "Nebl")
+dev.off()
+```
 
-# MP
-FeaturePlot(KO_s, features = "Osr1")
-FeaturePlot(KO_s, features = "Foxf1")
-FeaturePlot(KO_s, features = "Rgs5")
-FeaturePlot(KO_s, features = "Isl1")
-FeaturePlot(KO_s, features = "Tbx1")
-FeaturePlot(KO_s, features = "Fgf10")
-FeaturePlot(KO_s, features = "Mfap4")
+<img src="KO/Plots/KO_myo_markers/0001.png" width="70%" height="70%" /><img src="KO/Plots/KO_myo_markers/0002.png" width="70%" height="70%" /><img src="KO/Plots/KO_myo_markers/0003.png" width="70%" height="70%" /><img src="KO/Plots/KO_myo_markers/0004.png" width="70%" height="70%" /><img src="KO/Plots/KO_myo_markers/0005.png" width="70%" height="70%" /><img src="KO/Plots/KO_myo_markers/0006.png" width="70%" height="70%" /><img src="KO/Plots/KO_myo_markers/0007.png" width="70%" height="70%" /><img src="KO/Plots/KO_myo_markers/0008.png" width="70%" height="70%" />
 
-# Mes
-FeaturePlot(KO_s, features = "Postn")
-FeaturePlot(KO_s, features = "Cthrc1")
-FeaturePlot(KO_s, features = "Sox9")
-FeaturePlot(KO_s, features = "Pdgfra")
-FeaturePlot(KO_s, features = "Papss2")
-
-# Epicardial
+``` r
+# Epicardial markers
+pdf(file.path(plots_dir, "KO_epi_markers.pdf"), height = 7, width = 12)
 FeaturePlot(KO_s, features = "Wt1")
 FeaturePlot(KO_s, features = "Upk3b")
 FeaturePlot(KO_s, features = "Aldh1a2")
@@ -279,8 +281,58 @@ FeaturePlot(KO_s, features = "Sparc")
 FeaturePlot(KO_s, features = "Upk1b")
 FeaturePlot(KO_s, features = "Tmem255a")
 FeaturePlot(KO_s, features = "Kcne1l")
+dev.off()
+```
 
-# Blood
+<img src="KO/Plots/KO_epi_markers/0001.png" width="70%" height="70%" /><img src="KO/Plots/KO_epi_markers/0002.png" width="70%" height="70%" /><img src="KO/Plots/KO_epi_markers/0003.png" width="70%" height="70%" /><img src="KO/Plots/KO_epi_markers/0004.png" width="70%" height="70%" /><img src="KO/Plots/KO_epi_markers/0005.png" width="70%" height="70%" /><img src="KO/Plots/KO_epi_markers/0006.png" width="70%" height="70%" /><img src="KO/Plots/KO_epi_markers/0007.png" width="70%" height="70%" /><img src="KO/Plots/KO_epi_markers/0008.png" width="70%" height="70%" />
+
+``` r
+# Endocardial markers
+pdf(file.path(plots_dir, "KO_endo_markers.pdf"), height = 7, width = 12)
+FeaturePlot(KO_s, features = "Emcn")
+FeaturePlot(KO_s, features = "Npr3")
+FeaturePlot(KO_s, features = "Cdh5")
+FeaturePlot(KO_s, features = "Pecam1")
+FeaturePlot(KO_s, features = "Egfl7")
+FeaturePlot(KO_s, features = "Plvap")
+FeaturePlot(KO_s, features = "Klf2")
+FeaturePlot(KO_s, features = "Ecscr")
+FeaturePlot(KO_s, features = "Icam2")
+FeaturePlot(KO_s, features = "Plxnd1")
+dev.off()
+```
+
+<img src="KO/Plots/KO_endo_markers/0001.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0002.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0003.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0004.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0005.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0006.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0007.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0008.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0009.png" width="70%" height="70%" /><img src="KO/Plots/KO_endo_markers/0010.png" width="70%" height="70%" />
+
+``` r
+# Mesenchymal markers
+pdf(file.path(plots_dir, "KO_mes_markers.pdf"), height = 7, width = 12)
+FeaturePlot(KO_s, features = "Postn")
+FeaturePlot(KO_s, features = "Cthrc1")
+FeaturePlot(KO_s, features = "Sox9")
+FeaturePlot(KO_s, features = "Pdgfra")
+FeaturePlot(KO_s, features = "Papss2")
+dev.off()
+```
+
+<img src="KO/Plots/KO_mes_markers/0001.png" width="70%" height="70%" /><img src="KO/Plots/KO_mes_markers/0002.png" width="70%" height="70%" /><img src="KO/Plots/KO_mes_markers/0003.png" width="70%" height="70%" /><img src="KO/Plots/KO_mes_markers/0004.png" width="70%" height="70%" /><img src="KO/Plots/KO_mes_markers/0005.png" width="70%" height="70%" />
+
+``` r
+# Multi-potent Progenitor markers
+pdf(file.path(plots_dir, "KO_mp_markers.pdf"), height = 7, width = 12)
+FeaturePlot(KO_s, features = "Osr1")
+FeaturePlot(KO_s, features = "Foxf1")
+FeaturePlot(KO_s, features = "Rgs5")
+FeaturePlot(KO_s, features = "Fgf10")
+FeaturePlot(KO_s, features = "Mfap4")
+dev.off()
+```
+
+<img src="KO/Plots/KO_mp_markers/0001.png" width="70%" height="70%" /><img src="KO/Plots/KO_mp_markers/0002.png" width="70%" height="70%" /><img src="KO/Plots/KO_mp_markers/0003.png" width="70%" height="70%" /><img src="KO/Plots/KO_mp_markers/0004.png" width="70%" height="70%" /><img src="KO/Plots/KO_mp_markers/0005.png" width="70%" height="70%" />
+
+``` r
+# Blood markers
+pdf(file.path(plots_dir, "KO_blo_markers.pdf"), height = 7, width = 12)
 FeaturePlot(KO_s, features = "Hba-a1") # Erythroid
 FeaturePlot(KO_s, features = "Hba-a2") # Erythroid
 FeaturePlot(KO_s, features = "Hbb-bt") # Erythroid
@@ -291,7 +343,10 @@ FeaturePlot(KO_s, features = "Cd68") # Immune
 FeaturePlot(KO_s, features = "Rgs18") # Platelet
 FeaturePlot(KO_s, features = "Pf4") # Platelet
 FeaturePlot(KO_s, features = "Tubb1") # Platelet
+dev.off()
 ```
+
+<img src="KO/Plots/KO_blo_markers/0001.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0002.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0003.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0004.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0005.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0006.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0007.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0008.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0009.png" width="70%" height="70%" /><img src="KO/Plots/KO_blo_markers/0010.png" width="70%" height="70%" />
 
 ``` r
 KO_s <- AddMetaData(KO_s, rep(NA, length= nrow(KO_s@meta.data)), col.name = "broad_annot_1")

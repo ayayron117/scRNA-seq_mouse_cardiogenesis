@@ -250,6 +250,100 @@ saveRDS(all_markers, file.path(markers_dir, "1_WT_markers.rds"))
 ```
 
 ``` r
+# Myocardial markers
+pdf(file.path(plots_dir, "WT_myo_markers.pdf"), height = 7, width = 12)
+FeaturePlot(WT_s, features = "Actc1")
+FeaturePlot(WT_s, features = "Myl4")
+FeaturePlot(WT_s, features = "Ttn")
+FeaturePlot(WT_s, features = "Tnnc1")
+FeaturePlot(WT_s, features = "Tnnt2")
+FeaturePlot(WT_s, features = "Acta2")
+FeaturePlot(WT_s, features = "Cryab")
+FeaturePlot(WT_s, features = "Nebl")
+dev.off()
+```
+
+<img src="WT/Plots/WT_myo_markers/0001.png" width="70%" height="70%" /><img src="WT/Plots/WT_myo_markers/0002.png" width="70%" height="70%" /><img src="WT/Plots/WT_myo_markers/0003.png" width="70%" height="70%" /><img src="WT/Plots/WT_myo_markers/0004.png" width="70%" height="70%" /><img src="WT/Plots/WT_myo_markers/0005.png" width="70%" height="70%" /><img src="WT/Plots/WT_myo_markers/0006.png" width="70%" height="70%" /><img src="WT/Plots/WT_myo_markers/0007.png" width="70%" height="70%" /><img src="WT/Plots/WT_myo_markers/0008.png" width="70%" height="70%" />
+
+``` r
+# Epicardial markers
+pdf(file.path(plots_dir, "WT_epi_markers.pdf"), height = 7, width = 12)
+FeaturePlot(WT_s, features = "Wt1")
+FeaturePlot(WT_s, features = "Upk3b")
+FeaturePlot(WT_s, features = "Aldh1a2")
+FeaturePlot(WT_s, features = "Tbx18")
+FeaturePlot(WT_s, features = "Sparc")
+FeaturePlot(WT_s, features = "Upk1b")
+FeaturePlot(WT_s, features = "Tmem255a")
+FeaturePlot(WT_s, features = "Kcne1l")
+dev.off()
+```
+
+<img src="WT/Plots/WT_epi_markers/0001.png" width="70%" height="70%" /><img src="WT/Plots/WT_epi_markers/0002.png" width="70%" height="70%" /><img src="WT/Plots/WT_epi_markers/0003.png" width="70%" height="70%" /><img src="WT/Plots/WT_epi_markers/0004.png" width="70%" height="70%" /><img src="WT/Plots/WT_epi_markers/0005.png" width="70%" height="70%" /><img src="WT/Plots/WT_epi_markers/0006.png" width="70%" height="70%" /><img src="WT/Plots/WT_epi_markers/0007.png" width="70%" height="70%" /><img src="WT/Plots/WT_epi_markers/0008.png" width="70%" height="70%" />
+
+``` r
+# Endocardial markers
+pdf(file.path(plots_dir, "WT_endo_markers.pdf"), height = 7, width = 12)
+FeaturePlot(WT_s, features = "Emcn")
+FeaturePlot(WT_s, features = "Npr3")
+FeaturePlot(WT_s, features = "Cdh5")
+FeaturePlot(WT_s, features = "Pecam1")
+FeaturePlot(WT_s, features = "Egfl7")
+FeaturePlot(WT_s, features = "Plvap")
+FeaturePlot(WT_s, features = "Klf2")
+FeaturePlot(WT_s, features = "Ecscr")
+FeaturePlot(WT_s, features = "Icam2")
+FeaturePlot(WT_s, features = "Plxnd1")
+dev.off()
+```
+
+<img src="WT/Plots/WT_endo_markers/0001.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0002.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0003.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0004.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0005.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0006.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0007.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0008.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0009.png" width="70%" height="70%" /><img src="WT/Plots/WT_endo_markers/0010.png" width="70%" height="70%" />
+
+``` r
+# Mesenchymal markers
+pdf(file.path(plots_dir, "WT_mes_markers.pdf"), height = 7, width = 12)
+FeaturePlot(WT_s, features = "Postn")
+FeaturePlot(WT_s, features = "Cthrc1")
+FeaturePlot(WT_s, features = "Sox9")
+FeaturePlot(WT_s, features = "Pdgfra")
+FeaturePlot(WT_s, features = "Papss2")
+dev.off()
+```
+
+<img src="WT/Plots/WT_mes_markers/0001.png" width="70%" height="70%" /><img src="WT/Plots/WT_mes_markers/0002.png" width="70%" height="70%" /><img src="WT/Plots/WT_mes_markers/0003.png" width="70%" height="70%" /><img src="WT/Plots/WT_mes_markers/0004.png" width="70%" height="70%" /><img src="WT/Plots/WT_mes_markers/0005.png" width="70%" height="70%" />
+
+``` r
+# Multi-potent Progenitor markers
+pdf(file.path(plots_dir, "WT_mp_markers.pdf"), height = 7, width = 12)
+FeaturePlot(WT_s, features = "Osr1")
+FeaturePlot(WT_s, features = "Foxf1")
+FeaturePlot(WT_s, features = "Rgs5")
+FeaturePlot(WT_s, features = "Fgf10")
+FeaturePlot(WT_s, features = "Mfap4")
+dev.off()
+```
+
+<img src="WT/Plots/WT_mp_markers/0001.png" width="70%" height="70%" /><img src="WT/Plots/WT_mp_markers/0002.png" width="70%" height="70%" /><img src="WT/Plots/WT_mp_markers/0003.png" width="70%" height="70%" /><img src="WT/Plots/WT_mp_markers/0004.png" width="70%" height="70%" /><img src="WT/Plots/WT_mp_markers/0005.png" width="70%" height="70%" />
+
+``` r
+# Blood markers
+pdf(file.path(plots_dir, "WT_blo_markers.pdf"), height = 7, width = 12)
+FeaturePlot(WT_s, features = "Hba-a1") # Erythroid
+FeaturePlot(WT_s, features = "Hba-a2") # Erythroid
+FeaturePlot(WT_s, features = "Hbb-bt") # Erythroid
+FeaturePlot(WT_s, features = "Alas2") # Erythroid
+FeaturePlot(WT_s, features = "Fcgr1") # Immune
+FeaturePlot(WT_s, features = "C1qa") # Immune
+FeaturePlot(WT_s, features = "Cd68") # Immune
+FeaturePlot(WT_s, features = "Rgs18") # Platelet
+FeaturePlot(WT_s, features = "Pf4") # Platelet
+FeaturePlot(WT_s, features = "Tubb1") # Platelet
+dev.off()
+```
+
+<img src="WT/Plots/WT_blo_markers/0001.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0002.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0003.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0004.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0005.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0006.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0007.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0008.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0009.png" width="70%" height="70%" /><img src="WT/Plots/WT_blo_markers/0010.png" width="70%" height="70%" />
+
+``` r
 WT_s <- AddMetaData(WT_s, rep(NA, length= nrow(WT_s@meta.data)), col.name = "broad_annot_1")
 
 "Myocardial" -> WT_s@meta.data[which(WT_s$WT_clusters == 4 |
@@ -316,24 +410,6 @@ WT_s <- AddMetaData(WT_s, WT_s$broad_annot_1, col.name = "broad_annot_2")
 
 
 UMAPPlot(WT_s, group.by = "broad_annot_2")
-
-
-FeaturePlot(WT_s, features = "Hba-a1") # Erythroid
-FeaturePlot(WT_s, features = "Hba-a2") # Erythroid
-FeaturePlot(WT_s, features = "Hbb-bt") # Erythroid
-FeaturePlot(WT_s, features = "Alas2") # Erythroid
-FeaturePlot(WT_s, features = "Fcgr1") # Immune
-FeaturePlot(WT_s, features = "C1qa") # Immune
-FeaturePlot(WT_s, features = "Cd68") # Immune
-FeaturePlot(WT_s, features = "Rgs18") # Platelet
-FeaturePlot(WT_s, features = "Pf4") # Platelet
-FeaturePlot(WT_s, features = "Tubb1") # Platelet
-
-
-FeaturePlot(WT_s, features = "Thy1") # Fibroblast
-FeaturePlot(WT_s, features = "Tcf21") # Fibroblast
-FeaturePlot(WT_s, features = "Wt1") # Fibroblast
-FeaturePlot(WT_s, features = "Tbx18") # Fibroblast
 ```
 
 ``` r
