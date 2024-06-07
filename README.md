@@ -30,7 +30,7 @@
 <p align="center">
   <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/85f59ced-61fe-4a59-b8c4-5ea498df86ca">
   <br>
-  <img width="600" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/95c02fcc-cca2-47fb-804e-da423b5e3a9d">
+  <img width="400" alt="image" src="https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/assets/135864654/95c02fcc-cca2-47fb-804e-da423b5e3a9d">
 </p>
 
 ## **5.** [Cell-cell Communication](https://github.com/ayayron117/scRNA-seq_mouse_cardiogenesis/tree/main/5_Cell_cell_communication)
