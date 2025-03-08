@@ -1,4 +1,4 @@
-Sub SummaryOfConsMarkers()
+Sub SummaryOfMarkers()
     Dim ws As Worksheet
     Dim SummarySheet As Worksheet
     Dim SummaryWB As Workbook
