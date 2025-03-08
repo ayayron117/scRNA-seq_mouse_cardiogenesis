@@ -1,8 +1,4 @@
-KO Quality Control and Cell Cycle Scoring
-================
-Aaron Mohammed
 
-``` r
 library(Seurat)
 library(SingleCellExperiment)
 library(DropletQC)
@@ -24,11 +20,11 @@ dir.create(KO_rds)
 
 KO_markers <- file.path(KO_dir, "KO_Markers")
 dir.create(KO_markers)
-```
+
 
 ## Create KO Seurat Object
 
-``` r
+
 # Import count matrix for the wildtype 
 KO_mat <- Read10X(file.path(proj_path, 
                             "KO",
@@ -56,11 +52,11 @@ KO_s <- NormalizeData(KO_s)
 
 # Number of cells
 nrow(KO_s@meta.data) # 8666
-```
+
 
 ## KO DropletQC
 
-``` r
+
 KO_nf <- nuclear_fraction_tags(outs = file.path(proj_path,
                                                 "KO",
                                                 "outs"),
@@ -116,11 +112,11 @@ KO_s <- AddMetaData(KO_s, KO_s.ed.dc$df$cell_status, col.name = "DropletQC")
 
 # Save the seurat object
 saveRDS(KO_s, file.path(KO_rds, "0_KO_seurat.rds"))
-```
+
 
 ## Unfiltered KO Plots
 
-``` r
+
 # Ranges of counts, expressed genes, and percent mitochondria gene expression
 range(KO_s$nCount_RNA) # min = 500; max = 94972
 range(KO_s$nFeature_RNA) # min = 60; max = 9927
@@ -188,8 +184,8 @@ FeatureScatter(KO_s,
                group.by = "DropletQC") +
   ggtitle("KO - Unfiltered")
 dev.off()
-```
-``` r
+
+
 # Violin plots
 pdf(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"), height = 6, width = 8)
 VlnPlot(KO_s, 
@@ -274,8 +270,8 @@ pdf_combine(input = c(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"),
 file.remove(c(file.path(KO_plots, "KO_unfiltered_vln_plots_1.pdf"),
               file.path(KO_plots, "KO_unfiltered_vln_plots_2.pdf"),
               file.path(KO_plots, "KO_unfiltered_vln_plots_3.pdf")))
-```
-``` r
+
+
 # UMAP plots
 pdf(file.path(KO_plots, "0_KO_unfiltered_UMAPs.pdf"), height = 7, width = 12)
 UMAPPlot(KO_s, group.by = "KO_SC_1", label =TRUE) + ggtitle("KO Unfiltered | Clusters")
@@ -286,10 +282,10 @@ FeaturePlot(KO_s, features = "pct_mito") + ggtitle("KO Unfiltered | % of Mito Ge
 FeaturePlot(KO_s, features = "pct_ribo") + ggtitle("KO Unfiltered | % of Ribo Genes")
 FeaturePlot(KO_s, features = "nuclear_fraction") + ggtitle("KO Unfiltered | Nuclear Fraction")
 dev.off()
-```
+
 ## Cluster Markers
 
-``` r
+
 get.all.markers <- function (seurat, ident, path, fname) {
   
   DefaultAssay(seurat) <- "RNA"
@@ -320,18 +316,18 @@ get.all.markers <- function (seurat, ident, path, fname) {
   return(all_markers_list)
   
 }
-```
 
-``` r
+
+
 all_markers <- get.all.markers(seurat = KO_s,
                                ident = "seurat_clusters",
                                path = KO_markers,
                                fname = "0_KO_cluster_markers.xlsx")
-```
+
 
 ## KO Low-quality Filtering
 
-``` r
+
 KO_f <- subset(KO_s, 
                subset = nFeature_RNA <= 8000 &
                  nFeature_RNA >= 1500 & 
@@ -344,11 +340,11 @@ KO_f <- subset(KO_f, idents = "cell")
 
 # Number of cells
 nrow(KO_f@meta.data) # 5309
-```
+
 
 ## KO Doublet Classifications
 
-``` r
+
 KO_f <- FindVariableFeatures(KO_f, 
                              selection.method = "vst", 
                              nfeatures = 2000)
@@ -390,11 +386,11 @@ KO_f <- AddMetaData(KO_f, KO_sce$scDblFinder.class, col.name = "scDblFinder.clas
 KO_f <- AddMetaData(KO_f, KO_sce$scDblFinder.score, col.name = "scDblFinder.score")
 
 saveRDS(KO_f, file.path(KO_rds, "1_KO_seurat.rds"))
-```
+
 
 ## KO Plots w/ scDblFinder Classifications
 
-``` r
+
 pdf(file.path(KO_plots, "1_KO_doublet_scatter_plots.pdf"), height = 8, width = 12)
 FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
@@ -426,8 +422,8 @@ FeatureScatter(KO_f,
                feature2 = "pct_ribo", 
                group.by = "scDblFinder.class")
 dev.off()
-```
-``` r
+
+
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(KO_plots, "1_KO_doublet_vln_plots.pdf"), height = 6, width = 12)
 VlnPlot(KO_f, 
@@ -450,8 +446,8 @@ VlnPlot(KO_f,
         group.by = "scDblFinder.class") + 
   theme(legend.position="none")
 dev.off()
-```
-``` r
+
+
 # Violin plots grouped by scDblFinder clusters
 pdf(file.path(KO_plots, "1_KO_vln_scdblfinder_clusters.pdf"), height = 6, width = 12)
 VlnPlot(KO_f, 
@@ -474,8 +470,8 @@ VlnPlot(KO_f,
         group.by = "KO_SC_2") + 
   theme(legend.position="none")
 dev.off()
-```
-``` r
+
+
 # Violin plots grouped by original clusters
 pdf(file.path(KO_plots, "1_KO_vln_original_clusters.pdf"), height = 6, width = 12)
 VlnPlot(KO_f, 
@@ -498,8 +494,8 @@ VlnPlot(KO_f,
         group.by = "KO_SC_1") + 
   theme(legend.position="none")
 dev.off()
-```
-``` r
+
+
 # UMAP plots
 pdf(file.path(KO_plots, "1_KO_doublet_UMAPs.pdf"), height = 7, width = 12)
 UMAPPlot(KO_f, group.by = "KO_SC_2", label =TRUE) + ggtitle("KO Doublets | Clusters")
@@ -510,21 +506,21 @@ FeaturePlot(KO_f, features = "pct_mito") + ggtitle("KO Doublets | % of Mito Gene
 FeaturePlot(KO_f, features = "pct_ribo") + ggtitle("KO Doublets | % of Ribo Genes")
 FeaturePlot(KO_f, features = "scDblFinder.score") + ggtitle("KO Doublets | scDblFinder Score")
 dev.off()
-```
+
 ## KO Doublet Removal
 
-``` r
+
 # Filter out the cells classified as doublets
 Idents(KO_f) <- "scDblFinder.class"
 KO_f <- subset(KO_f, idents = "singlet")
 
 # Number of cells
 nrow(KO_f@meta.data) # 4988
-```
+
 
 ## Dim Reduction & Clustering After QC
 
-``` r
+
 KO_f <- FindVariableFeatures(KO_f, 
                              selection.method = "vst", 
                              nfeatures = 2000)
@@ -549,11 +545,11 @@ KO_f <- FindClusters(KO_f,
 KO_f <- AddMetaData(KO_f, KO_f$seurat_clusters, col.name = "KO_SC_3")
 
 saveRDS(KO_f, file.path(KO_rds, "2_KO_seurat.rds"))
-```
+
 
 ## KO Cell Cycle Scoring
 
-``` r
+
 s.genes <- c("Mcm5","Pcna","Tyms","Fen1","Mcm2","Mcm4","Rrm1","Ung","Gins2",
              "Mcm6","Cdca7","Dtl","Prim1","Uhrf1","Hells","Rfc2","Rpa2","Nasp",
              "Rad51ap1","Gmnn","Wdr76","Slbp","Ccne2","Ubr7","Pold3","Msh2",
@@ -574,11 +570,11 @@ KO_f <- CellCycleScoring(KO_f,
                          set.ident = FALSE)
 
 saveRDS(KO_f, file.path(KO_rds, "3_KO_seurat.rds"))
-```
+
 
 ## KO Filtered Plots
 
-``` r
+
 pdf(file.path(KO_plots, "2_KO_scatter_plots.pdf"), height = 8, width = 12)
 FeatureScatter(KO_f,
                feature1 = "nCount_RNA", 
@@ -610,8 +606,8 @@ FeatureScatter(KO_f,
                feature2 = "pct_ribo", 
                group.by = "orig.ident")
 dev.off()
-```
-``` r
+
+
 # Violin plots grouped by scDblFinder classifications
 pdf(file.path(KO_plots, "2_KO_vln_plots.pdf"), height = 6, width = 12)
 VlnPlot(KO_f, 
@@ -634,8 +630,8 @@ VlnPlot(KO_f,
         group.by = "orig.ident") + 
   theme(legend.position="none")
 dev.off()
-```
-``` r
+
+
 # Violin plots grouped by final clusters
 pdf(file.path(KO_plots, "2_KO_vln_final_clusters.pdf"), height = 6, width = 12)
 VlnPlot(KO_f, 
@@ -658,8 +654,8 @@ VlnPlot(KO_f,
         group.by = "KO_SC_3") + 
   theme(legend.position="none")
 dev.off()
-```
-``` r
+
+
 # UMAP plots
 pdf(file.path(KO_plots, "2_KO_UMAPs.pdf"), height = 7, width = 12)
 UMAPPlot(KO_f, group.by = "KO_SC_3", label =TRUE) + ggtitle("KO | Clusters")
@@ -669,8 +665,8 @@ FeaturePlot(KO_f, features = "nFeature_RNA") + ggtitle("KO | # of Genes")
 FeaturePlot(KO_f, features = "pct_mito") + ggtitle("KO | % of Mito Genes")
 FeaturePlot(KO_f, features = "pct_ribo") + ggtitle("KO | % of Ribo Genes")
 dev.off()
-```
-``` r
+
+
 # Clean up the seurat (it'll later be merged with the WT seurat, this is just my way of making the 
 # final merged seurat organized)
 
@@ -678,4 +674,4 @@ KO_f$RNA_snn_res.0.6 <- NULL
 KO_f$seurat_clusters <- NULL 
 
 saveRDS(KO_f, file.path(getwd(), "KO_seurat.rds"))
-```
+
